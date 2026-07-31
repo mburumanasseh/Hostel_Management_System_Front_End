@@ -2,6 +2,7 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
+  Navigate,
 } from "react-router-dom";
 
 import Layout from "./components/Layout";
@@ -10,57 +11,83 @@ import RoomAllocation from "./components/RoomAllocation";
 import Maintenance from "./components/Maintenance";
 import Login from "./components/Login";
 import FeeTracking from "./components/FeeTracking";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
     <Router>
-
       <Routes>
 
-        {/* LOGIN HAS NO SIDEBAR OR TOPBAR */}
+        {/* =====================================
+            LOGIN
+        ===================================== */}
+
         <Route
           path="/login"
           element={<Login />}
         />
 
-        {/* APPLICATION PAGES USE LAYOUT */}
+
+        {/* =====================================
+            PROTECTED APPLICATION
+        ===================================== */}
+
+        <Route element={<ProtectedRoute />}>
+
+          <Route
+            path="/"
+            element={
+              <Layout>
+                <Dashboard />
+              </Layout>
+            }
+          />
+
+          <Route
+            path="/room-allocation"
+            element={
+              <Layout>
+                <RoomAllocation />
+              </Layout>
+            }
+          />
+
+          <Route
+            path="/maintenance"
+            element={
+              <Layout>
+                <Maintenance />
+              </Layout>
+            }
+          />
+
+          <Route
+            path="/fee-tracking"
+            element={
+              <Layout>
+                <FeeTracking />
+              </Layout>
+            }
+          />
+
+        </Route>
+
+
+        {/* =====================================
+            UNKNOWN URL
+        ===================================== */}
+
         <Route
-          path="/*"
+          path="*"
           element={
-            <Layout>
-              <Routes>
-
-                {/* DASHBOARD */}
-                <Route
-                  path="/"
-                  element={<Dashboard />}
-                />
-
-                {/* ROOM ALLOCATION */}
-                <Route
-                  path="/room-allocation"
-                  element={<RoomAllocation />}
-                />
-
-                {/* MAINTENANCE */}
-                <Route
-                  path="/maintenance"
-                  element={<Maintenance />}
-                />
-
-                {/* FEE TRACKING */}
-                <Route
-                  path="/fee-tracking"
-                  element={<FeeTracking />}
-                />
-
-              </Routes>
-            </Layout>
+            <Navigate
+              to="/"
+              replace
+            />
           }
         />
 
       </Routes>
-
     </Router>
   );
 }
