@@ -1,15 +1,26 @@
-// src/components/Layout.jsx
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 
 export default function Layout({ children }) {
   return (
-    <div className="layout">
+    <div className="app-layout">
+
+      {/* LEFT SIDEBAR */}
       <Sidebar />
-      <div className="main">
+
+      {/* RIGHT SIDE */}
+      <div className="main-area">
+
+        {/* TOPBAR */}
         <Topbar />
-        <div className="content">{children}</div>
+
+        {/* PAGE CONTENT */}
+        <main className="page-content">
+          {children}
+        </main>
+
       </div>
+
     </div>
   );
 }

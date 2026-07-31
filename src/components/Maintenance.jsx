@@ -21,57 +21,62 @@ export default function Maintenance() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  // Load maintenance requests, students and rooms
   useEffect(() => {
-    Promise.all([
-      getMaintenanceRequests(),
-      getStudents(),
-      getRooms(),
-    ])
-      .then(([maintenanceRes, studentRes, roomRes]) => {
+    const loadData = async () => {
+      try {
+        const [maintenanceRes, studentsRes, roomsRes] =
+          await Promise.all([
+            getMaintenanceRequests(),
+            getStudents(),
+            getRooms(),
+          ]);
+
         setRequests(
           maintenanceRes.data.requests || []
         );
 
         setStudents(
-          studentRes.data.students ||
-            studentRes.data ||
-            []
+          studentsRes.data.students ||
+          studentsRes.data ||
+          []
         );
 
         setRooms(
-          roomRes.data.rooms ||
-            roomRes.data ||
-            []
+          roomsRes.data.rooms ||
+          roomsRes.data ||
+          []
         );
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error(err);
-
         setError(
           err.response?.data?.error ||
-          "Failed to load maintenance data"
+          "Failed to load maintenance data."
         );
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    loadData();
   }, []);
 
-  const handleAdd = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    setError("");
+
     if (
       !studentId ||
       !roomId ||
       !title.trim() ||
       !description.trim()
     ) {
-      setError(
-        "Please fill in student, room, title and description."
-      );
+      setError("Please fill in all required fields.");
       return;
     }
 
     setSubmitting(true);
-    setError("");
 
     try {
       const response = await addMaintenanceRequest({
@@ -82,145 +87,306 @@ export default function Maintenance() {
         priority,
       });
 
+      const newRequest =
+        response.data.request;
+
       setRequests((prev) => [
+        newRequest,
         ...prev,
-        response.data.request,
       ]);
 
+      // Reset form
       setStudentId("");
       setRoomId("");
       setTitle("");
       setDescription("");
       setPriority("Medium");
 
-      alert("Maintenance request created!");
     } catch (err) {
       console.error(err);
 
       setError(
         err.response?.data?.error ||
-        "Failed to create maintenance request"
+        "Failed to create maintenance request."
       );
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading) {
-    return <p>Loading maintenance...</p>;
-  }
-
   return (
-    <div className="maintenance">
-      <h2>Maintenance Requests</h2>
+    <div className="maintenance-page">
 
+      {/* HEADER */}
+      <div className="page-header">
+        <div>
+          <h1>Maintenance Requests</h1>
+          <p>
+            Report and manage hostel maintenance issues.
+          </p>
+        </div>
+      </div>
+
+      {/* ERROR */}
       {error && (
-        <p className="error">
+        <div className="maintenance-error">
           {typeof error === "object"
             ? JSON.stringify(error)
             : error}
-        </p>
+        </div>
       )}
 
-      <div className="new-request">
-        <select
-          value={studentId}
-          onChange={(e) =>
-            setStudentId(e.target.value)
-          }
-        >
-          <option value="">Select Student</option>
+      {/* REQUEST FORM */}
+      <div className="maintenance-form-card">
 
-          {students.map((student) => (
-            <option key={student.id} value={student.id}>
-              {student.name ||
-                `Student ${student.id}`}
-            </option>
-          ))}
-        </select>
+        <div className="form-header">
+          <h2>Submit Maintenance Request</h2>
+          <p>
+            Enter the details of the maintenance issue.
+          </p>
+        </div>
 
-        <select
-          value={roomId}
-          onChange={(e) =>
-            setRoomId(e.target.value)
-          }
-        >
-          <option value="">Select Room</option>
+        <form onSubmit={handleSubmit}>
 
-          {rooms.map((room) => (
-            <option key={room.id} value={room.id}>
-              {room.room_number ||
-                room.number ||
-                `Room ${room.id}`}
-            </option>
-          ))}
-        </select>
+          <div className="form-grid">
 
-        <input
-          value={title}
-          onChange={(e) =>
-            setTitle(e.target.value)
-          }
-          placeholder="Issue title..."
-        />
+            {/* STUDENT */}
+            <div className="form-group">
+              <label>
+                Student <span>*</span>
+              </label>
 
-        <textarea
-          value={description}
-          onChange={(e) =>
-            setDescription(e.target.value)
-          }
-          placeholder="Describe the issue..."
-        />
+              <select
+                value={studentId}
+                onChange={(e) =>
+                  setStudentId(e.target.value)
+                }
+                required
+              >
+                <option value="">
+                  Select student
+                </option>
 
-        <select
-          value={priority}
-          onChange={(e) =>
-            setPriority(e.target.value)
-          }
-        >
-          <option value="Low">Low</option>
-          <option value="Medium">Medium</option>
-          <option value="High">High</option>
-          <option value="Urgent">Urgent</option>
-        </select>
+                {students.map((student) => (
+                  <option
+                    key={student.id}
+                    value={student.id}
+                  >
+                    {student.first_name}{" "}
+                    {student.last_name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <button
-          onClick={handleAdd}
-          disabled={submitting}
-        >
-          {submitting
-            ? "Submitting..."
-            : "+ New Request"}
-        </button>
+            {/* ROOM */}
+            <div className="form-group">
+              <label>
+                Room <span>*</span>
+              </label>
+
+              <select
+                value={roomId}
+                onChange={(e) =>
+                  setRoomId(e.target.value)
+                }
+                required
+              >
+                <option value="">
+                  Select room
+                </option>
+
+                {rooms.map((room) => (
+                  <option
+                    key={room.id}
+                    value={room.id}
+                  >
+                    Room {room.room_number ||
+                      room.number ||
+                      room.id}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* TITLE */}
+            <div className="form-group full-width">
+              <label>
+                Issue Title <span>*</span>
+              </label>
+
+              <input
+                type="text"
+                value={title}
+                onChange={(e) =>
+                  setTitle(e.target.value)
+                }
+                placeholder="e.g. Broken shower"
+                required
+              />
+            </div>
+
+            {/* DESCRIPTION */}
+            <div className="form-group full-width">
+              <label>
+                Description <span>*</span>
+              </label>
+
+              <textarea
+                value={description}
+                onChange={(e) =>
+                  setDescription(e.target.value)
+                }
+                placeholder="Describe the problem in detail..."
+                rows="5"
+                required
+              />
+            </div>
+
+            {/* PRIORITY */}
+            <div className="form-group">
+              <label>Priority</label>
+
+              <select
+                value={priority}
+                onChange={(e) =>
+                  setPriority(e.target.value)
+                }
+              >
+                <option value="Low">
+                  Low
+                </option>
+
+                <option value="Medium">
+                  Medium
+                </option>
+
+                <option value="High">
+                  High
+                </option>
+
+                <option value="Urgent">
+                  Urgent
+                </option>
+              </select>
+            </div>
+
+          </div>
+
+          <div className="form-actions">
+            <button
+              type="submit"
+              className="primary-button"
+              disabled={submitting}
+            >
+              {submitting
+                ? "Submitting..."
+                : "Submit Request"}
+            </button>
+          </div>
+
+        </form>
       </div>
 
-      {requests.length === 0 ? (
-        <p>No maintenance requests yet.</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Title</th>
-              <th>Description</th>
-              <th>Priority</th>
-              <th>Status</th>
-            </tr>
-          </thead>
+      {/* REQUESTS TABLE */}
+      <div className="maintenance-table-card">
 
-          <tbody>
-            {requests.map((request) => (
-              <tr key={request.id}>
-                <td>{request.id}</td>
-                <td>{request.title}</td>
-                <td>{request.description}</td>
-                <td>{request.priority}</td>
-                <td>{request.status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+        <div className="table-header">
+          <div>
+            <h2>Maintenance Requests</h2>
+            <p>
+              Recent maintenance issues
+            </p>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="empty-state">
+            Loading requests...
+          </div>
+        ) : requests.length === 0 ? (
+          <div className="empty-state">
+            No maintenance requests found.
+          </div>
+        ) : (
+          <div className="table-wrapper">
+
+            <table className="maintenance-table">
+
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Student</th>
+                  <th>Room</th>
+                  <th>Title</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+
+              <tbody>
+
+                {requests.map((request) => (
+
+                  <tr key={request.id}>
+
+                    <td>
+                      {request.id}
+                    </td>
+
+                    <td>
+                      {request.student_name ||
+                        request.student ||
+                        request.student_id}
+                    </td>
+
+                    <td>
+                      {request.room_number ||
+                        request.room ||
+                        request.room_id}
+                    </td>
+
+                    <td>
+                      <strong>
+                        {request.title}
+                      </strong>
+                    </td>
+
+                    <td>
+                      <span
+                        className={`priority-badge ${String(
+                          request.priority || "Medium"
+                        ).toLowerCase()}`}
+                      >
+                        {request.priority ||
+                          "Medium"}
+                      </span>
+                    </td>
+
+                    <td>
+                      <span
+                        className={`status-badge ${String(
+                          request.status || "Pending"
+                        ).toLowerCase()}`}
+                      >
+                        {request.status ||
+                          "Pending"}
+                      </span>
+                    </td>
+
+                  </tr>
+
+                ))}
+
+              </tbody>
+
+            </table>
+
+          </div>
+        )}
+
+      </div>
+
     </div>
   );
 }
