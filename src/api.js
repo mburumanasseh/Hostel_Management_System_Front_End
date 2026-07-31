@@ -1,4 +1,3 @@
-// src/api.js
 import axios from "axios";
 
 const API = axios.create({
@@ -8,39 +7,30 @@ const API = axios.create({
   },
 });
 
-// Automatically attach JWT token to requests
-API.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("access_token");
+// Attach JWT automatically
+API.interceptors.request.use((config) => {
+  const token = localStorage.getItem("access_token");
 
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
 
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+  return config;
+});
 
-// =========================
+// ====================
 // AUTH
-// =========================
+// ====================
 
-export const login = (data) =>
-  API.post("/auth/login", data);
+export const login = (data) => API.post("/auth/login", data);
+export const register = (data) => API.post("/auth/register", data);
+export const getCurrentUser = () => API.get("/auth/me");
 
-export const register = (data) =>
-  API.post("/auth/register", data);
-
-export const getCurrentUser = () =>
-  API.get("/auth/me");
-
-// =========================
+// ====================
 // STUDENTS
-// =========================
+// ====================
 
-export const getStudents = () =>
-  API.get("/students");
+export const getStudents = () => API.get("/students");
 
 export const getStudent = (studentId) =>
   API.get(`/students/${studentId}`);
@@ -54,31 +44,20 @@ export const updateStudent = (studentId, data) =>
 export const deleteStudent = (studentId) =>
   API.delete(`/students/${studentId}`);
 
-// =========================
+// ====================
 // BLOCKS
-// =========================
+// ====================
 
-export const getBlocks = () =>
-  API.get("/blocks");
+export const getBlocks = () => API.get("/blocks");
 
 export const getBlock = (blockId) =>
   API.get(`/blocks/${blockId}`);
 
-export const createBlock = (data) =>
-  API.post("/blocks", data);
-
-export const updateBlock = (blockId, data) =>
-  API.put(`/blocks/${blockId}`, data);
-
-export const deleteBlock = (blockId) =>
-  API.delete(`/blocks/${blockId}`);
-
-// =========================
+// ====================
 // ROOMS
-// =========================
+// ====================
 
-export const getRooms = () =>
-  API.get("/rooms");
+export const getRooms = () => API.get("/rooms");
 
 export const getRoom = (roomId) =>
   API.get(`/rooms/${roomId}`);
@@ -86,18 +65,9 @@ export const getRoom = (roomId) =>
 export const getRoomsByBlock = (blockId) =>
   API.get(`/rooms/block/${blockId}`);
 
-export const createRoom = (data) =>
-  API.post("/rooms", data);
-
-export const updateRoom = (roomId, data) =>
-  API.put(`/rooms/${roomId}`, data);
-
-export const deleteRoom = (roomId) =>
-  API.delete(`/rooms/${roomId}`);
-
-// =========================
+// ====================
 // ALLOCATIONS
-// =========================
+// ====================
 
 export const getAllocations = () =>
   API.get("/allocations");
@@ -120,9 +90,9 @@ export const completeAllocation = (allocationId) =>
 export const deleteAllocation = (allocationId) =>
   API.delete(`/allocations/${allocationId}`);
 
-// =========================
+// ====================
 // MAINTENANCE
-// =========================
+// ====================
 
 export const getMaintenanceRequests = () =>
   API.get("/maintenance");
