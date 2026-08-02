@@ -23,16 +23,36 @@ API.interceptors.request.use(
       sessionStorage.getItem("access_token");
 
     if (token) {
+      config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     }
 
     return config;
   },
+  (error) => Promise.reject(error)
+);
+
+API.interceptors.response.use(
+  (response) => response,
+
   (error) => {
+    if (error.response?.status === 401) {
+      console.error(
+        "Authentication failed:",
+        error.response.data
+      );
+
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user");
+
+      sessionStorage.removeItem("access_token");
+
+      window.location.href = "/login";
+    }
+
     return Promise.reject(error);
   }
 );
-
 
 /*
 |--------------------------------------------------------------------------
@@ -184,14 +204,6 @@ export const deleteMaintenanceRequest = (
 |--------------------------------------------------------------------------
 | PAYMENTS / FEES
 |--------------------------------------------------------------------------
-|
-| NOTE:
-| Your backend currently has the Payment model/table,
-| but from the routes you showed me, there is no payment_routes.py yet.
-|
-| These functions are therefore prepared for when we finish
-| the payment backend.
-|--------------------------------------------------------------------------
 */
 
 // Get all payments
@@ -210,11 +222,14 @@ export const getStudentPayments = (studentId) =>
 export const createPayment = (data) =>
   API.post("/payments", data);
 
-// Update a payment
-export const updatePayment = (paymentId, data) =>
-  API.put(`/payments/${paymentId}`, data);
+// Update payment status
+export const updatePaymentStatus = (paymentId, data) =>
+  API.patch(
+    `/payments/${paymentId}/status`,
+    data
+  );
 
-// Delete a payment
+// Delete payment
 export const deletePayment = (paymentId) =>
   API.delete(`/payments/${paymentId}`);
 

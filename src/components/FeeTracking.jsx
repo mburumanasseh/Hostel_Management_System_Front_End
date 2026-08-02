@@ -1,89 +1,253 @@
-import { useMemo, useState } from "react";
-
-const demoPayments = [
-  {
-    id: 1,
-    student: "Manasseh Mburu",
-    admission: "STU001",
-    amount: 25000,
-    date: "2026-07-28",
-    status: "Paid",
-  },
-  {
-    id: 2,
-    student: "Brian Mwangi",
-    admission: "STU002",
-    amount: 18000,
-    date: "2026-07-27",
-    status: "Paid",
-  },
-  {
-    id: 3,
-    student: "Mary Wanjiku",
-    admission: "STU003",
-    amount: 12000,
-    date: "2026-07-25",
-    status: "Partial",
-  },
-  {
-    id: 4,
-    student: "Kevin Otieno",
-    admission: "STU004",
-    amount: 5000,
-    date: "2026-07-20",
-    status: "Pending",
-  },
-];
+import { useEffect, useState } from "react";
+import {
+  getPayments,
+  createPayment,
+  updatePaymentStatus,
+  deletePayment,
+} from "../api";
 
 export default function FeeTracking() {
-  const [payments] = useState(demoPayments);
-  const [search, setSearch] = useState("");
+  const [payments, setPayments] = useState([]);
 
-  const filteredPayments = useMemo(() => {
-    const query = search.toLowerCase().trim();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-    if (!query) {
-      return payments;
+  const [showForm, setShowForm] = useState(false);
+
+  const [formData, setFormData] = useState({
+    student_id: "",
+    amount: "",
+    semester: "",
+    reference_number: "",
+  });
+
+  const [submitting, setSubmitting] = useState(false);
+
+  /*
+  |--------------------------------------------------------------------------
+  | LOAD PAYMENTS
+  |--------------------------------------------------------------------------
+  */
+
+  const loadPayments = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await getPayments();
+
+      setPayments(
+        response.data.payments || []
+      );
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err.response?.data?.error ||
+        err.response?.data?.msg ||
+        "Failed to load payments."
+      );
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return payments.filter(
-      (payment) =>
-        payment.student.toLowerCase().includes(query) ||
-        payment.admission.toLowerCase().includes(query)
+  useEffect(() => {
+    loadPayments();
+  }, []);
+
+  /*
+  |--------------------------------------------------------------------------
+  | FORM INPUT
+  |--------------------------------------------------------------------------
+  */
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | CREATE PAYMENT
+  |--------------------------------------------------------------------------
+  */
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (submitting) return;
+
+    try {
+      setSubmitting(true);
+      setError("");
+
+      await createPayment({
+        student_id: Number(formData.student_id),
+        amount: Number(formData.amount),
+        semester: formData.semester,
+        reference_number:
+          formData.reference_number,
+      });
+
+      setFormData({
+        student_id: "",
+        amount: "",
+        semester: "",
+        reference_number: "",
+      });
+
+      setShowForm(false);
+
+      await loadPayments();
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err.response?.data?.error ||
+        "Failed to record payment."
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | UPDATE STATUS
+  |--------------------------------------------------------------------------
+  */
+
+  const handleStatusChange = async (
+    paymentId,
+    status
+  ) => {
+    try {
+      await updatePaymentStatus(
+        paymentId,
+        { status }
+      );
+
+      await loadPayments();
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err.response?.data?.error ||
+        "Failed to update payment status."
+      );
+    }
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | DELETE PAYMENT
+  |--------------------------------------------------------------------------
+  */
+
+  const handleDelete = async (paymentId) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this payment?"
     );
-  }, [payments, search]);
+
+    if (!confirmed) return;
+
+    try {
+      await deletePayment(paymentId);
+
+      setPayments((prev) =>
+        prev.filter(
+          (payment) =>
+            payment.id !== paymentId
+        )
+      );
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err.response?.data?.error ||
+        "Failed to delete payment."
+      );
+    }
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | SUMMARY
+  |--------------------------------------------------------------------------
+  */
 
   const totalCollected = payments
-    .filter((payment) => payment.status === "Paid")
-    .reduce((total, payment) => total + payment.amount, 0);
+    .filter(
+      (payment) =>
+        payment.status === "Paid"
+    )
+    .reduce(
+      (total, payment) =>
+        total + Number(payment.amount),
+      0
+    );
 
-  const pendingAmount = payments
-    .filter((payment) => payment.status !== "Paid")
-    .reduce((total, payment) => total + payment.amount, 0);
+  const outstanding = payments
+    .filter(
+      (payment) =>
+        payment.status === "Pending"
+    )
+    .reduce(
+      (total, payment) =>
+        total + Number(payment.amount),
+      0
+    );
 
   const paidCount = payments.filter(
-    (payment) => payment.status === "Paid"
+    (payment) =>
+      payment.status === "Paid"
   ).length;
 
   return (
     <div className="fee-page">
 
       {/* HEADER */}
+
       <div className="page-header">
+
         <div>
           <h1>Fee Tracking</h1>
 
           <p>
-            Monitor student hostel fee payments and outstanding balances.
+            Monitor student hostel fee
+            payments and outstanding
+            balances.
           </p>
         </div>
 
-        <button className="primary-button">
-          + Record Payment
+        <button
+          className="primary-button"
+          onClick={() =>
+            setShowForm(!showForm)
+          }
+        >
+          {showForm
+            ? "Cancel"
+            : "+ Record Payment"}
         </button>
+
       </div>
 
-      {/* SUMMARY CARDS */}
+      {/* ERROR */}
+
+      {error && (
+        <div className="login-error">
+          {error}
+        </div>
+      )}
+
+      {/* SUMMARY */}
+
       <div className="fee-summary">
 
         <div className="fee-card">
@@ -95,11 +259,12 @@ export default function FeeTracking() {
             <span>Total Collected</span>
 
             <h2>
-              KSh {totalCollected.toLocaleString()}
+              KSh{" "}
+              {totalCollected.toLocaleString()}
             </h2>
 
             <small>
-              Current academic term
+              Successful payments
             </small>
           </div>
         </div>
@@ -114,11 +279,12 @@ export default function FeeTracking() {
             <span>Outstanding</span>
 
             <h2>
-              KSh {pendingAmount.toLocaleString()}
+              KSh{" "}
+              {outstanding.toLocaleString()}
             </h2>
 
             <small>
-              Requires follow-up
+              Pending payments
             </small>
           </div>
         </div>
@@ -130,14 +296,14 @@ export default function FeeTracking() {
           </div>
 
           <div>
-            <span>Paid Students</span>
+            <span>Paid Payments</span>
 
             <h2>
               {paidCount}
             </h2>
 
             <small>
-              Successful payments
+              Completed transactions
             </small>
           </div>
         </div>
@@ -164,35 +330,160 @@ export default function FeeTracking() {
       </div>
 
 
-      {/* PAYMENT TABLE */}
+      {/* RECORD PAYMENT FORM */}
+
+      {showForm && (
+
+        <div className="fee-form-card">
+
+          <h2>Record Payment</h2>
+
+          <p>
+            Enter the student's payment
+            information.
+          </p>
+
+          <form onSubmit={handleSubmit}>
+
+            <div className="form-grid">
+
+              <div className="form-group">
+
+                <label>
+                  Student ID
+                </label>
+
+                <input
+                  type="number"
+                  name="student_id"
+                  value={
+                    formData.student_id
+                  }
+                  onChange={handleChange}
+                  placeholder="Enter student ID"
+                  required
+                />
+
+              </div>
+
+
+              <div className="form-group">
+
+                <label>
+                  Amount (KSh)
+                </label>
+
+                <input
+                  type="number"
+                  name="amount"
+                  value={
+                    formData.amount
+                  }
+                  onChange={handleChange}
+                  placeholder="Enter amount"
+                  min="1"
+                  required
+                />
+
+              </div>
+
+
+              <div className="form-group">
+
+                <label>
+                  Semester
+                </label>
+
+                <input
+                  type="text"
+                  name="semester"
+                  value={
+                    formData.semester
+                  }
+                  onChange={handleChange}
+                  placeholder="e.g. Semester 1"
+                  required
+                />
+
+              </div>
+
+
+              <div className="form-group">
+
+                <label>
+                  Reference Number
+                </label>
+
+                <input
+                  type="text"
+                  name="reference_number"
+                  value={
+                    formData.reference_number
+                  }
+                  onChange={handleChange}
+                  placeholder="e.g. MPESA12345"
+                  required
+                />
+
+              </div>
+
+            </div>
+
+            <button
+              type="submit"
+              className="primary-button"
+              disabled={submitting}
+            >
+              {submitting
+                ? "Saving..."
+                : "Save Payment"}
+            </button>
+
+          </form>
+
+        </div>
+      )}
+
+
+      {/* PAYMENTS TABLE */}
+
       <div className="fee-table-card">
 
         <div className="table-header">
 
           <div>
-            <h2>Recent Payments</h2>
+            <h2>
+              Recent Payments
+            </h2>
 
             <p>
-              Latest hostel fee transactions
+              Latest hostel fee
+              transactions
             </p>
           </div>
-
-
-          <input
-            type="text"
-            placeholder="Search student..."
-            className="fee-search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
 
         </div>
 
 
-        {filteredPayments.length === 0 ? (
+        {loading ? (
 
           <div className="empty-state">
-            No payment records found.
+            Loading payments...
+          </div>
+
+        ) : payments.length === 0 ? (
+
+          <div className="empty-state">
+
+            <h3>
+              No payment records
+            </h3>
+
+            <p>
+              No payments have been
+              recorded yet.
+            </p>
+
           </div>
 
         ) : (
@@ -202,53 +493,123 @@ export default function FeeTracking() {
             <table className="fee-table">
 
               <thead>
+
                 <tr>
+
+                  <th>ID</th>
+
                   <th>Student</th>
-                  <th>Admission No.</th>
+
                   <th>Amount</th>
+
+                  <th>Semester</th>
+
+                  <th>Reference</th>
+
                   <th>Date</th>
+
                   <th>Status</th>
+
+                  <th>Action</th>
+
                 </tr>
+
               </thead>
 
 
               <tbody>
 
-                {filteredPayments.map((payment) => (
+                {payments.map(
+                  (payment) => (
 
-                  <tr key={payment.id}>
+                    <tr
+                      key={payment.id}
+                    >
 
-                    <td>
-                      <strong>
-                        {payment.student}
-                      </strong>
-                    </td>
+                      <td>
+                        {payment.id}
+                      </td>
 
-                    <td>
-                      {payment.admission}
-                    </td>
+                      <td>
+                        Student #
+                        {payment.student_id}
+                      </td>
 
-                    <td>
-                      KSh {payment.amount.toLocaleString()}
-                    </td>
+                      <td>
+                        KSh{" "}
+                        {Number(
+                          payment.amount
+                        ).toLocaleString()}
+                      </td>
 
-                    <td>
-                      {payment.date}
-                    </td>
+                      <td>
+                        {payment.semester}
+                      </td>
 
-                    <td>
+                      <td>
+                        {
+                          payment.reference_number
+                        }
+                      </td>
 
-                      <span
-                        className={`payment-status ${payment.status.toLowerCase()}`}
-                      >
-                        {payment.status}
-                      </span>
+                      <td>
+                        {payment.payment_date
+                          ? new Date(
+                              payment.payment_date
+                            ).toLocaleDateString()
+                          : "-"}
+                      </td>
 
-                    </td>
+                      <td>
 
-                  </tr>
+                        <select
+                          value={
+                            payment.status
+                          }
+                          onChange={(e) =>
+                            handleStatusChange(
+                              payment.id,
+                              e.target.value
+                            )
+                          }
+                          className={`payment-status ${payment.status.toLowerCase()}`}
+                        >
 
-                ))}
+                          <option value="Pending">
+                            Pending
+                          </option>
+
+                          <option value="Paid">
+                            Paid
+                          </option>
+
+                          <option value="Failed">
+                            Failed
+                          </option>
+
+                        </select>
+
+                      </td>
+
+                      <td>
+
+                        <button
+                          className="delete-button"
+                          onClick={() =>
+                            handleDelete(
+                              payment.id
+                            )
+                          }
+                        >
+                          Delete
+                        </button>
+
+                      </td>
+
+                    </tr>
+
+                  )
+                )}
 
               </tbody>
 
