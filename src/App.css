@@ -2404,3 +2404,13 @@ button:disabled {
     align-items: flex-start;
   }
 }
+
+.login-success {
+  margin-bottom: 15px;
+  padding: 10px;
+  border-radius: 6px;
+  background: #eaf7ee;
+  color: #237a3b;
+  font-size: 12px;
+  line-height: 1.4;
+}

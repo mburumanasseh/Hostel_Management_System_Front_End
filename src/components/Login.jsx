@@ -29,24 +29,43 @@ export default function Login() {
       const { access_token, user } = response.data;
 
       if (rememberMe) {
-        localStorage.setItem("access_token", access_token);
-        localStorage.setItem("user", JSON.stringify(user));
+        localStorage.setItem(
+          "access_token",
+          access_token
+        );
+
+        localStorage.setItem(
+          "user",
+          JSON.stringify(user)
+        );
       } else {
-        sessionStorage.setItem("access_token", access_token);
-        sessionStorage.setItem("user", JSON.stringify(user));
+        sessionStorage.setItem(
+          "access_token",
+          access_token
+        );
+
+        sessionStorage.setItem(
+          "user",
+          JSON.stringify(user)
+        );
       }
 
-      console.log("Logged in user:", user);
+      console.log(
+        "Logged in user:",
+        user
+      );
 
       navigate("/");
+
     } catch (err) {
       console.error(err);
 
       setError(
         err.response?.data?.error ||
-          err.response?.data?.message ||
-          "Invalid email or password"
+        err.response?.data?.message ||
+        "Invalid email or password"
       );
+
     } finally {
       setLoading(false);
     }
@@ -54,6 +73,7 @@ export default function Login() {
 
   return (
     <div className="login-page">
+
       <div className="login-card">
 
         <h1>Welcome back</h1>
@@ -73,7 +93,9 @@ export default function Login() {
         <form onSubmit={handleLogin}>
 
           {/* EMAIL */}
+
           <div className="form-group">
+
             <label htmlFor="email">
               EMAIL ADDRESS
             </label>
@@ -82,14 +104,20 @@ export default function Login() {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) =>
+                setEmail(e.target.value)
+              }
               placeholder="you@mwangaza.ac.ke"
               required
             />
+
           </div>
 
+
           {/* PASSWORD */}
+
           <div className="form-group">
+
             <label htmlFor="password">
               PASSWORD
             </label>
@@ -98,9 +126,15 @@ export default function Login() {
 
               <input
                 id="password"
-                type={showPassword ? "text" : "password"}
+                type={
+                  showPassword
+                    ? "text"
+                    : "password"
+                }
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) =>
+                  setPassword(e.target.value)
+                }
                 placeholder="Enter your password"
                 required
               />
@@ -109,17 +143,23 @@ export default function Login() {
                 type="button"
                 className="password-toggle"
                 onClick={() =>
-                  setShowPassword(!showPassword)
+                  setShowPassword(
+                    !showPassword
+                  )
                 }
               >
-                {showPassword ? "◉" : "◉"}
+                ◉
               </button>
 
             </div>
+
           </div>
 
+
           {/* ROLE */}
+
           <div className="form-group">
+
             <label htmlFor="role">
               ROLE
             </label>
@@ -127,8 +167,11 @@ export default function Login() {
             <select
               id="role"
               value={role}
-              onChange={(e) => setRole(e.target.value)}
+              onChange={(e) =>
+                setRole(e.target.value)
+              }
             >
+
               <option value="student">
                 Student
               </option>
@@ -144,10 +187,14 @@ export default function Login() {
               <option value="finance">
                 Finance
               </option>
+
             </select>
+
           </div>
 
-          {/* REMEMBER ME */}
+
+          {/* OPTIONS */}
+
           <div className="login-options">
 
             <label className="remember-me">
@@ -156,24 +203,36 @@ export default function Login() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) =>
-                  setRememberMe(e.target.checked)
+                  setRememberMe(
+                    e.target.checked
+                  )
                 }
               />
 
-              <span>Remember me</span>
+              <span>
+                Remember me
+              </span>
 
             </label>
+
 
             <button
               type="button"
               className="forgot-password"
+              onClick={() =>
+                navigate(
+                  "/forgot-password"
+                )
+              }
             >
               Forgot password?
             </button>
 
           </div>
 
-          {/* SIGN IN */}
+
+          {/* LOGIN BUTTON */}
+
           <button
             type="submit"
             className="login-button"
@@ -192,7 +251,9 @@ export default function Login() {
 
         </form>
 
-        {/* CREATE ACCOUNT */}
+
+        {/* REGISTER */}
+
         <div className="register-section">
 
           <span>
@@ -202,6 +263,9 @@ export default function Login() {
           <button
             type="button"
             className="create-account"
+            onClick={() =>
+              navigate("/register")
+            }
           >
             Create an account
           </button>
@@ -209,6 +273,7 @@ export default function Login() {
         </div>
 
       </div>
+
     </div>
   );
 }
