@@ -1,21 +1,76 @@
 import { Link } from "react-router-dom";
+import {
+  getLoggedInUser,
+  getUserRole,
+} from "../utils/auth";
 
 export default function Sidebar() {
+  const user = getLoggedInUser();
+  const role = getUserRole();
+
+  // Features available to everyone
+  const menuItems = [
+    {
+      name: "Dashboard",
+      path: "/",
+    },
+    {
+      name: "Room Allocation",
+      path: "/room-allocation",
+    },
+    {
+      name: "Maintenance",
+      path: "/maintenance",
+    },
+  ];
+
+  // Fee Tracking is available only to staff
+  if (
+    role === "admin" ||
+    role === "warden" ||
+    role === "finance"
+  ) {
+    menuItems.push({
+      name: "Fee Tracking",
+      path: "/fee-tracking",
+    });
+  }
+
   return (
     <div className="sidebar">
+
+      {/* LOGO */}
       <h2>HostelMS</h2>
+
+      {/* NAVIGATION */}
       <ul>
-        <li><Link to="/">Dashboard</Link></li>
-        <li><Link to="/room-allocation">Room Allocation</Link></li>
-        <li><Link to="/maintenance">Maintenance</Link></li>
-        <li><Link to="/fee-tracking">Fee Tracking</Link></li>
+        {menuItems.map((item) => (
+          <li key={item.path}>
+            <Link to={item.path}>
+              {item.name}
+            </Link>
+          </li>
+        ))}
       </ul>
-      <div className="alerts">
-        <p>2 overdue fees - 7 urgent maintenance requests</p>
-      </div>
+
+      {/* STAFF ALERTS */}
+      {role !== "student" && (
+        <div className="alerts">
+          <p>
+            2 overdue fees - 7 urgent maintenance requests
+          </p>
+        </div>
+      )}
+
+      {/* LOGGED-IN USER */}
       <footer>
-        <small>Hostel Warden (warden@mwangaza.ac.ke)</small>
+        <small>
+          {user
+            ? `${user.first_name} ${user.last_name} (${user.role})`
+            : "User"}
+        </small>
       </footer>
+
     </div>
   );
 }

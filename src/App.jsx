@@ -13,6 +13,14 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import FeeTracking from "./components/FeeTracking";
 import ProtectedRoute from "./components/ProtectedRoute";
+import RoleRoute from "./components/RoleRoute";
+
+
+/*
+|--------------------------------------------------------------------------
+| FORGOT PASSWORD
+|--------------------------------------------------------------------------
+*/
 
 function ForgotPassword() {
   return (
@@ -42,37 +50,58 @@ function ForgotPassword() {
   );
 }
 
-function App() {
+
+/*
+|--------------------------------------------------------------------------
+| APPLICATION
+|--------------------------------------------------------------------------
+*/
+
+export default function App() {
   return (
     <Router>
 
       <Routes>
 
-        {/* ================================
-            PUBLIC AUTHENTICATION
-        ================================= */}
+        {/* =====================================================
+            PUBLIC ROUTES
+        ===================================================== */}
 
+        {/* LOGIN */}
         <Route
           path="/login"
           element={<Login />}
         />
 
+        {/* REGISTER */}
         <Route
           path="/register"
           element={<Register />}
         />
 
+        {/* FORGOT PASSWORD */}
         <Route
           path="/forgot-password"
           element={<ForgotPassword />}
         />
 
 
-        {/* ================================
-            PROTECTED APPLICATION
-        ================================= */}
+        {/* =====================================================
+            AUTHENTICATED ROUTES
+        ===================================================== */}
 
         <Route element={<ProtectedRoute />}>
+
+
+          {/* =================================================
+              DASHBOARD
+              
+              Available to:
+              - Student
+              - Warden
+              - Finance
+              - Admin
+          ================================================= */}
 
           <Route
             path="/"
@@ -83,39 +112,114 @@ function App() {
             }
           />
 
-          <Route
-            path="/room-allocation"
-            element={
-              <Layout>
-                <RoomAllocation />
-              </Layout>
-            }
-          />
+
+          {/* =================================================
+              ROOM ALLOCATION
+
+              Available to:
+              - Student
+              - Warden
+              - Admin
+          ================================================= */}
 
           <Route
-            path="/maintenance"
             element={
-              <Layout>
-                <Maintenance />
-              </Layout>
+              <RoleRoute
+                allowedRoles={[
+                  "student",
+                  "warden",
+                  "admin",
+                ]}
+              />
             }
-          />
+          >
+
+            <Route
+              path="/room-allocation"
+              element={
+                <Layout>
+                  <RoomAllocation />
+                </Layout>
+              }
+            />
+
+          </Route>
+
+
+          {/* =================================================
+              MAINTENANCE
+
+              Available to:
+              - Student
+              - Warden
+              - Admin
+          ================================================= */}
 
           <Route
-            path="/fee-tracking"
             element={
-              <Layout>
-                <FeeTracking />
-              </Layout>
+              <RoleRoute
+                allowedRoles={[
+                  "student",
+                  "warden",
+                  "admin",
+                ]}
+              />
             }
-          />
+          >
+
+            <Route
+              path="/maintenance"
+              element={
+                <Layout>
+                  <Maintenance />
+                </Layout>
+              }
+            />
+
+          </Route>
+
+
+          {/* =================================================
+              FEE TRACKING
+
+              Available to:
+              - Admin
+              - Warden
+              - Finance
+
+              NOT available to students.
+          ================================================= */}
+
+          <Route
+            element={
+              <RoleRoute
+                allowedRoles={[
+                  "admin",
+                  "warden",
+                  "finance",
+                ]}
+              />
+            }
+          >
+
+            <Route
+              path="/fee-tracking"
+              element={
+                <Layout>
+                  <FeeTracking />
+                </Layout>
+              }
+            />
+
+          </Route>
+
 
         </Route>
 
 
-        {/* ================================
-            UNKNOWN URL
-        ================================= */}
+        {/* =====================================================
+            UNKNOWN ROUTES
+        ===================================================== */}
 
         <Route
           path="*"
@@ -132,5 +236,3 @@ function App() {
     </Router>
   );
 }
-
-export default App;
