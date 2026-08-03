@@ -7,7 +7,6 @@ const API = axios.create({
   },
 });
 
-
 /*
 |--------------------------------------------------------------------------
 | JWT INTERCEPTOR
@@ -29,8 +28,20 @@ API.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
+
+
+/*
+|--------------------------------------------------------------------------
+| RESPONSE INTERCEPTOR
+|--------------------------------------------------------------------------
+| If the backend returns 401, clear the stored authentication data
+| and send the user back to the login page.
+|--------------------------------------------------------------------------
+*/
 
 API.interceptors.response.use(
   (response) => response,
@@ -46,6 +57,7 @@ API.interceptors.response.use(
       localStorage.removeItem("user");
 
       sessionStorage.removeItem("access_token");
+      sessionStorage.removeItem("user");
 
       window.location.href = "/login";
     }
@@ -53,6 +65,7 @@ API.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 
 /*
 |--------------------------------------------------------------------------
@@ -145,26 +158,75 @@ export const deleteRoom = (roomId) =>
 |--------------------------------------------------------------------------
 */
 
+/*
+| Get all allocations
+| Intended for administrative/warden use.
+*/
+
 export const getAllocations = () =>
   API.get("/allocations");
+
+
+/*
+| Get one allocation
+*/
 
 export const getAllocation = (allocationId) =>
   API.get(`/allocations/${allocationId}`);
 
+
+/*
+| Create an allocation
+*/
+
 export const createAllocation = (data) =>
   API.post("/allocations", data);
+
+
+/*
+| Get allocation history for a specific student
+*/
 
 export const getStudentAllocations = (studentId) =>
   API.get(`/allocations/student/${studentId}`);
 
+
+/*
+| Get active allocation for a specific student
+*/
+
 export const getActiveAllocation = (studentId) =>
-  API.get(`/allocations/student/${studentId}/active`);
+  API.get(
+    `/allocations/student/${studentId}/active`
+  );
+
+
+/*
+| Get the currently logged-in student's allocation
+*/
+
+export const getMyAllocation = () =>
+  API.get("/allocations/my");
+
+
+/*
+| Complete an allocation
+*/
 
 export const completeAllocation = (allocationId) =>
-  API.put(`/allocations/${allocationId}/complete`);
+  API.put(
+    `/allocations/${allocationId}/complete`
+  );
+
+
+/*
+| Delete an allocation
+*/
 
 export const deleteAllocation = (allocationId) =>
-  API.delete(`/allocations/${allocationId}`);
+  API.delete(
+    `/allocations/${allocationId}`
+  );
 
 
 /*
@@ -173,17 +235,58 @@ export const deleteAllocation = (allocationId) =>
 |--------------------------------------------------------------------------
 */
 
+/*
+| Get all maintenance requests
+*/
+
 export const getMaintenanceRequests = () =>
   API.get("/maintenance");
 
-export const getMaintenanceRequest = (requestId) =>
-  API.get(`/maintenance/${requestId}`);
 
-export const getStudentMaintenanceRequests = (studentId) =>
-  API.get(`/maintenance/student/${studentId}`);
+/*
+| Get one maintenance request
+*/
+
+export const getMaintenanceRequest = (requestId) =>
+  API.get(
+    `/maintenance/${requestId}`
+  );
+
+
+/*
+| Get maintenance requests belonging to a student
+*/
+
+export const getStudentMaintenanceRequests = (
+  studentId
+) =>
+  API.get(
+    `/maintenance/student/${studentId}`
+  );
+
+
+/*
+| Get currently logged-in student's maintenance requests
+*/
+
+export const getMyMaintenanceRequests = () =>
+  API.get("/maintenance/my");
+
+
+/*
+| Create maintenance request
+*/
 
 export const addMaintenanceRequest = (data) =>
-  API.post("/maintenance", data);
+  API.post(
+    "/maintenance",
+    data
+  );
+
+
+/*
+| Update maintenance request status
+*/
 
 export const updateMaintenanceStatus = (
   requestId,
@@ -194,10 +297,17 @@ export const updateMaintenanceStatus = (
     data
   );
 
+
+/*
+| Delete maintenance request
+*/
+
 export const deleteMaintenanceRequest = (
   requestId
 ) =>
-  API.delete(`/maintenance/${requestId}`);
+  API.delete(
+    `/maintenance/${requestId}`
+  );
 
 
 /*
@@ -206,32 +316,80 @@ export const deleteMaintenanceRequest = (
 |--------------------------------------------------------------------------
 */
 
-// Get all payments
+/*
+| Get all payments
+| Intended for admin/finance/warden use.
+*/
+
 export const getPayments = () =>
   API.get("/payments");
 
-// Get one payment
+
+/*
+| Get one payment
+*/
+
 export const getPayment = (paymentId) =>
-  API.get(`/payments/${paymentId}`);
+  API.get(
+    `/payments/${paymentId}`
+  );
 
-// Get payments belonging to a student
-export const getStudentPayments = (studentId) =>
-  API.get(`/payments/student/${studentId}`);
 
-// Create a payment
+/*
+| Get payments belonging to a specific student
+*/
+
+export const getStudentPayments = (
+  studentId
+) =>
+  API.get(
+    `/payments/student/${studentId}`
+  );
+
+
+/*
+| Get currently logged-in student's payments
+*/
+
+export const getMyPayments = () =>
+  API.get("/payments/my");
+
+
+/*
+| Create payment
+*/
+
 export const createPayment = (data) =>
-  API.post("/payments", data);
+  API.post(
+    "/payments",
+    data
+  );
 
-// Update payment status
-export const updatePaymentStatus = (paymentId, data) =>
+
+/*
+| Update payment status
+*/
+
+export const updatePaymentStatus = (
+  paymentId,
+  data
+) =>
   API.patch(
     `/payments/${paymentId}/status`,
     data
   );
 
-// Delete payment
-export const deletePayment = (paymentId) =>
-  API.delete(`/payments/${paymentId}`);
+
+/*
+| Delete payment
+*/
+
+export const deletePayment = (
+  paymentId
+) =>
+  API.delete(
+    `/payments/${paymentId}`
+  );
 
 
 /*
@@ -239,8 +397,7 @@ export const deletePayment = (paymentId) =>
 | DASHBOARD
 |--------------------------------------------------------------------------
 |
-| Your current dashboard is calculating statistics from:
-| students, rooms, allocations and maintenance.
+| Retrieves the data currently used by the dashboard.
 |
 |--------------------------------------------------------------------------
 */

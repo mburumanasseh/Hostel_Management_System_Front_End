@@ -1,14 +1,16 @@
 import { Link } from "react-router-dom";
-import {
-  getLoggedInUser,
-  getUserRole,
-} from "../utils/auth";
 
 export default function Sidebar() {
-  const user = getLoggedInUser();
-  const role = getUserRole();
+  const storedUser =
+    localStorage.getItem("user") ||
+    sessionStorage.getItem("user");
 
-  // Features available to everyone
+  const user = storedUser
+    ? JSON.parse(storedUser)
+    : null;
+
+  const role = user?.role;
+
   const menuItems = [
     {
       name: "Dashboard",
@@ -24,7 +26,7 @@ export default function Sidebar() {
     },
   ];
 
-  // Fee Tracking is available only to staff
+  // Fee Tracking is available to admin, warden and finance.
   if (
     role === "admin" ||
     role === "warden" ||
@@ -39,7 +41,7 @@ export default function Sidebar() {
   return (
     <div className="sidebar">
 
-      {/* LOGO */}
+      {/* LOGO / TITLE */}
       <h2>HostelMS</h2>
 
       {/* NAVIGATION */}
@@ -53,16 +55,7 @@ export default function Sidebar() {
         ))}
       </ul>
 
-      {/* STAFF ALERTS */}
-      {role !== "student" && (
-        <div className="alerts">
-          <p>
-            2 overdue fees - 7 urgent maintenance requests
-          </p>
-        </div>
-      )}
-
-      {/* LOGGED-IN USER */}
+      {/* USER */}
       <footer>
         <small>
           {user
