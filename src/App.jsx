@@ -1,3 +1,4 @@
+
 import {
   BrowserRouter as Router,
   Routes,
@@ -12,6 +13,7 @@ import Maintenance from "./components/Maintenance";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import FeeTracking from "./components/FeeTracking";
+import StudentFeeTracking from "./components/StudentFeeTracking";
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleRoute from "./components/RoleRoute";
 
@@ -37,9 +39,9 @@ function ForgotPassword() {
         <button
           type="button"
           className="login-button"
-          onClick={() =>
-            window.location.href = "/login"
-          }
+          onClick={() => {
+            window.location.href = "/login";
+          }}
         >
           Back to Login
         </button>
@@ -67,19 +69,16 @@ export default function App() {
             PUBLIC ROUTES
         ===================================================== */}
 
-        {/* LOGIN */}
         <Route
           path="/login"
           element={<Login />}
         />
 
-        {/* REGISTER */}
         <Route
           path="/register"
           element={<Register />}
         />
 
-        {/* FORGOT PASSWORD */}
         <Route
           path="/forgot-password"
           element={<ForgotPassword />}
@@ -95,12 +94,8 @@ export default function App() {
 
           {/* =================================================
               DASHBOARD
-              
-              Available to:
-              - Student
-              - Warden
-              - Finance
-              - Admin
+
+              All authenticated users can access dashboard.
           ================================================= */}
 
           <Route
@@ -116,10 +111,7 @@ export default function App() {
           {/* =================================================
               ROOM ALLOCATION
 
-              Available to:
-              - Student
-              - Warden
-              - Admin
+              Student / Warden / Admin
           ================================================= */}
 
           <Route
@@ -149,10 +141,7 @@ export default function App() {
           {/* =================================================
               MAINTENANCE
 
-              Available to:
-              - Student
-              - Warden
-              - Admin
+              Student / Warden / Admin
           ================================================= */}
 
           <Route
@@ -180,14 +169,54 @@ export default function App() {
 
 
           {/* =================================================
-              FEE TRACKING
+              STUDENT FEE TRACKING
 
-              Available to:
-              - Admin
-              - Warden
-              - Finance
+              Student ONLY
 
-              NOT available to students.
+              Students can:
+              - View their own fee records
+              - View payment history
+              - Make payments
+
+              Students CANNOT:
+              - View other students' payments
+              - Manage payment records
+              - Update payment statuses
+              - Delete payments
+          ================================================= */}
+
+          <Route
+            element={
+              <RoleRoute
+                allowedRoles={[
+                  "student",
+                ]}
+              />
+            }
+          >
+
+            <Route
+              path="/student-fee-tracking"
+              element={
+                <Layout>
+                  <StudentFeeTracking />
+                </Layout>
+              }
+            />
+
+          </Route>
+
+
+          {/* =================================================
+              STAFF FEE TRACKING
+
+              Admin / Warden / Finance ONLY
+
+              Staff can:
+              - View all student payments
+              - Record payments
+              - Update payment status
+              - Delete payments
           ================================================= */}
 
           <Route
