@@ -1,3 +1,4 @@
+
 import axios from "axios";
 
 const API = axios.create({
@@ -7,11 +8,12 @@ const API = axios.create({
   },
 });
 
+
 /*
 |--------------------------------------------------------------------------
 | JWT INTERCEPTOR
 |--------------------------------------------------------------------------
-| Automatically attaches the logged-in user's token to every request.
+| Automatically attaches the logged-in user's JWT to every request.
 |--------------------------------------------------------------------------
 */
 
@@ -38,8 +40,8 @@ API.interceptors.request.use(
 |--------------------------------------------------------------------------
 | RESPONSE INTERCEPTOR
 |--------------------------------------------------------------------------
-| If the backend returns 401, clear the stored authentication data
-| and send the user back to the login page.
+| If the backend returns 401, clear authentication data and
+| redirect the user to the login page.
 |--------------------------------------------------------------------------
 */
 
@@ -159,7 +161,7 @@ export const deleteRoom = (roomId) =>
 */
 
 /*
-| Get all allocations
+| Get all allocations.
 | Intended for administrative/warden use.
 */
 
@@ -168,7 +170,7 @@ export const getAllocations = () =>
 
 
 /*
-| Get one allocation
+| Get one allocation.
 */
 
 export const getAllocation = (allocationId) =>
@@ -176,7 +178,7 @@ export const getAllocation = (allocationId) =>
 
 
 /*
-| Create an allocation
+| Create an allocation.
 */
 
 export const createAllocation = (data) =>
@@ -184,7 +186,7 @@ export const createAllocation = (data) =>
 
 
 /*
-| Get allocation history for a specific student
+| Get allocation history for a specific student.
 */
 
 export const getStudentAllocations = (studentId) =>
@@ -192,7 +194,7 @@ export const getStudentAllocations = (studentId) =>
 
 
 /*
-| Get active allocation for a specific student
+| Get active allocation for a specific student.
 */
 
 export const getActiveAllocation = (studentId) =>
@@ -202,7 +204,11 @@ export const getActiveAllocation = (studentId) =>
 
 
 /*
-| Get the currently logged-in student's allocation
+| Get the currently logged-in student's allocation.
+|
+| This is important for Maintenance.
+| The frontend can use this to determine the student's
+| current room automatically.
 */
 
 export const getMyAllocation = () =>
@@ -210,7 +216,7 @@ export const getMyAllocation = () =>
 
 
 /*
-| Complete an allocation
+| Complete an allocation.
 */
 
 export const completeAllocation = (allocationId) =>
@@ -220,7 +226,7 @@ export const completeAllocation = (allocationId) =>
 
 
 /*
-| Delete an allocation
+| Delete an allocation.
 */
 
 export const deleteAllocation = (allocationId) =>
@@ -236,7 +242,9 @@ export const deleteAllocation = (allocationId) =>
 */
 
 /*
-| Get all maintenance requests
+| Get all maintenance requests.
+|
+| Intended for admin/warden use.
 */
 
 export const getMaintenanceRequests = () =>
@@ -244,7 +252,7 @@ export const getMaintenanceRequests = () =>
 
 
 /*
-| Get one maintenance request
+| Get one maintenance request.
 */
 
 export const getMaintenanceRequest = (requestId) =>
@@ -254,7 +262,7 @@ export const getMaintenanceRequest = (requestId) =>
 
 
 /*
-| Get maintenance requests belonging to a student
+| Get maintenance requests belonging to a specific student.
 */
 
 export const getStudentMaintenanceRequests = (
@@ -266,7 +274,11 @@ export const getStudentMaintenanceRequests = (
 
 
 /*
-| Get currently logged-in student's maintenance requests
+| Get maintenance requests belonging to the
+| currently logged-in student.
+|
+| This should be used by students instead of
+| requesting their student ID from the frontend.
 */
 
 export const getMyMaintenanceRequests = () =>
@@ -274,7 +286,22 @@ export const getMyMaintenanceRequests = () =>
 
 
 /*
-| Create maintenance request
+| Create a maintenance request.
+|
+| IMPORTANT:
+| For the student workflow, the backend should determine
+| student_id and room_id from the authenticated JWT.
+|
+| Therefore the student frontend should eventually send:
+|
+| {
+|   title,
+|   description,
+|   priority
+| }
+|
+| Admin/warden workflows can continue sending student_id
+| and room_id if the backend permits them.
 */
 
 export const addMaintenanceRequest = (data) =>
@@ -285,7 +312,9 @@ export const addMaintenanceRequest = (data) =>
 
 
 /*
-| Update maintenance request status
+| Update maintenance request status.
+|
+| Admin/Warden only.
 */
 
 export const updateMaintenanceStatus = (
@@ -299,7 +328,9 @@ export const updateMaintenanceStatus = (
 
 
 /*
-| Delete maintenance request
+| Delete maintenance request.
+|
+| Admin only.
 */
 
 export const deleteMaintenanceRequest = (
@@ -317,7 +348,8 @@ export const deleteMaintenanceRequest = (
 */
 
 /*
-| Get all payments
+| Get all payments.
+|
 | Intended for admin/finance/warden use.
 */
 
@@ -326,7 +358,7 @@ export const getPayments = () =>
 
 
 /*
-| Get one payment
+| Get one payment.
 */
 
 export const getPayment = (paymentId) =>
@@ -336,7 +368,7 @@ export const getPayment = (paymentId) =>
 
 
 /*
-| Get payments belonging to a specific student
+| Get payments belonging to a specific student.
 */
 
 export const getStudentPayments = (
@@ -348,7 +380,8 @@ export const getStudentPayments = (
 
 
 /*
-| Get currently logged-in student's payments
+| Get payments belonging to the currently
+| logged-in student.
 */
 
 export const getMyPayments = () =>
@@ -356,7 +389,7 @@ export const getMyPayments = () =>
 
 
 /*
-| Create payment
+| Create payment.
 */
 
 export const createPayment = (data) =>
@@ -367,7 +400,7 @@ export const createPayment = (data) =>
 
 
 /*
-| Update payment status
+| Update payment status.
 */
 
 export const updatePaymentStatus = (
@@ -381,7 +414,7 @@ export const updatePaymentStatus = (
 
 
 /*
-| Delete payment
+| Delete payment.
 */
 
 export const deletePayment = (
@@ -394,11 +427,58 @@ export const deletePayment = (
 
 /*
 |--------------------------------------------------------------------------
+| FINANCIAL STATUS
+|--------------------------------------------------------------------------
+*/
+
+// Get current student's financial status
+export const getMyFinancialStatus = () =>
+  API.get("/payments/my/status");
+
+// Get a specific student's financial status
+// Finance/Admin only
+export const getStudentFinancialStatus = (studentId) =>
+  API.get(
+    `/payments/student/${studentId}/status`
+  );
+
+
+/*
+|--------------------------------------------------------------------------
+| HOSTEL FEES
+|--------------------------------------------------------------------------
+*/
+
+// Get all semester hostel fees
+export const getHostelFees = () =>
+  API.get("/hostel-fees");
+
+// Get one semester hostel fee
+export const getHostelFee = (feeId) =>
+  API.get(`/hostel-fees/${feeId}`);
+
+// Create hostel fee
+// Admin only
+export const createHostelFee = (data) =>
+  API.post("/hostel-fees", data);
+
+// Update hostel fee
+// Admin only
+export const updateHostelFee = (feeId, data) =>
+  API.put(`/hostel-fees/${feeId}`, data);
+
+// Delete hostel fee
+// Admin only
+export const deleteHostelFee = (feeId) =>
+  API.delete(`/hostel-fees/${feeId}`);
+
+
+/*
+|--------------------------------------------------------------------------
 | DASHBOARD
 |--------------------------------------------------------------------------
 |
 | Retrieves the data currently used by the dashboard.
-|
 |--------------------------------------------------------------------------
 */
 

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../api";
@@ -5,7 +6,6 @@ import { login } from "../api";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("warden");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
@@ -152,43 +152,6 @@ export default function Login() {
               </button>
 
             </div>
-
-          </div>
-
-
-          {/* ROLE */}
-
-          <div className="form-group">
-
-            <label htmlFor="role">
-              ROLE
-            </label>
-
-            <select
-              id="role"
-              value={role}
-              onChange={(e) =>
-                setRole(e.target.value)
-              }
-            >
-
-              <option value="student">
-                Student
-              </option>
-
-              <option value="warden">
-                Hostel Warden
-              </option>
-
-              <option value="admin">
-                Administrator
-              </option>
-
-              <option value="finance">
-                Finance
-              </option>
-
-            </select>
 
           </div>
 

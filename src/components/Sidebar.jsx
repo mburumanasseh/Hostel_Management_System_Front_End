@@ -34,54 +34,94 @@ export default function Sidebar() {
   |--------------------------------------------------------------------------
   | MENU ITEMS
   |--------------------------------------------------------------------------
+  |
+  | Each menu item specifies which roles are allowed to see it.
+  |
   */
 
   const menuItems = [
     {
       name: "Dashboard",
       path: "/",
+      roles: [
+        "admin",
+        "finance",
+        "warden",
+        "student"
+      ],
     },
+
     {
       name: "Room Allocation",
       path: "/room-allocation",
+      roles: [
+        "admin",
+        "warden",
+        "student"
+      ],
     },
+
     {
       name: "Maintenance",
       path: "/maintenance",
+      roles: [
+        "admin",
+        "warden",
+        "student"
+      ],
+    },
+
+    {
+      name: "Payments",
+      path: "/payments",
+      roles: [
+        "admin",
+        "finance"
+      ],
+    },
+
+    {
+      name: "Hostel Fees",
+      path: "/hostel-fees",
+      roles: [
+        "admin",
+        "finance"
+      ],
+    },
+
+    {
+      name: "Fee Tracking",
+      path: "/student-fee-tracking",
+      roles: [
+        "student"
+      ],
+    },
+
+    {
+      name: "Fee Tracking",
+      path: "/fee-tracking",
+      roles: [
+        "admin",
+        "finance",
+        "warden"
+      ],
     },
   ];
 
 
   /*
   |--------------------------------------------------------------------------
-  | STUDENT FEE TRACKING
+  | FILTER MENU BY USER ROLE
   |--------------------------------------------------------------------------
+  |
+  | Only menu items whose roles include the current user's role
+  | will be displayed.
+  |
   */
 
-  if (role === "student") {
-    menuItems.push({
-      name: "Fee Tracking",
-      path: "/student-fee-tracking",
-    });
-  }
-
-
-  /*
-  |--------------------------------------------------------------------------
-  | STAFF FEE TRACKING
-  |--------------------------------------------------------------------------
-  */
-
-  if (
-    role === "admin" ||
-    role === "warden" ||
-    role === "finance"
-  ) {
-    menuItems.push({
-      name: "Fee Tracking",
-      path: "/fee-tracking",
-    });
-  }
+  const visibleMenuItems = menuItems.filter((item) =>
+    item.roles.includes(role)
+  );
 
 
   /*
@@ -211,7 +251,7 @@ export default function Sidebar() {
 
       <ul>
 
-        {menuItems.map((item) => (
+        {visibleMenuItems.map((item) => (
 
           <li
             key={item.path}

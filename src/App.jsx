@@ -14,6 +14,9 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import FeeTracking from "./components/FeeTracking";
 import StudentFeeTracking from "./components/StudentFeeTracking";
+import Payments from "./components/Payments";
+import HostelFees from "./components/HostelFees";
+
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleRoute from "./components/RoleRoute";
 
@@ -86,7 +89,7 @@ export default function App() {
 
 
         {/* =====================================================
-            AUTHENTICATED ROUTES
+            PROTECTED ROUTES
         ===================================================== */}
 
         <Route element={<ProtectedRoute />}>
@@ -95,7 +98,7 @@ export default function App() {
           {/* =================================================
               DASHBOARD
 
-              All authenticated users can access dashboard.
+              All authenticated users
           ================================================= */}
 
           <Route
@@ -172,17 +175,6 @@ export default function App() {
               STUDENT FEE TRACKING
 
               Student ONLY
-
-              Students can:
-              - View their own fee records
-              - View payment history
-              - Make payments
-
-              Students CANNOT:
-              - View other students' payments
-              - Manage payment records
-              - Update payment statuses
-              - Delete payments
           ================================================= */}
 
           <Route
@@ -210,13 +202,7 @@ export default function App() {
           {/* =================================================
               STAFF FEE TRACKING
 
-              Admin / Warden / Finance ONLY
-
-              Staff can:
-              - View all student payments
-              - Record payments
-              - Update payment status
-              - Delete payments
+              Admin / Finance / Warden
           ================================================= */}
 
           <Route
@@ -224,8 +210,8 @@ export default function App() {
               <RoleRoute
                 allowedRoles={[
                   "admin",
-                  "warden",
                   "finance",
+                  "warden",
                 ]}
               />
             }
@@ -236,6 +222,81 @@ export default function App() {
               element={
                 <Layout>
                   <FeeTracking />
+                </Layout>
+              }
+            />
+
+          </Route>
+
+
+          {/* =================================================
+              PAYMENTS
+
+              Admin / Finance ONLY
+
+              Finance Officer:
+              - View payments
+              - Record payments
+              - Update payment status
+
+              Admin:
+              - Full payment management
+          ================================================= */}
+
+          <Route
+            element={
+              <RoleRoute
+                allowedRoles={[
+                  "admin",
+                  "finance",
+                ]}
+              />
+            }
+          >
+
+            <Route
+              path="/payments"
+              element={
+                <Layout>
+                  <Payments />
+                </Layout>
+              }
+            />
+
+          </Route>
+
+
+          {/* =================================================
+              HOSTEL FEES
+
+              Admin / Finance
+
+              Admin:
+              - Create hostel fee
+              - Update hostel fee
+              - Delete hostel fee
+              - View hostel fees
+
+              Finance:
+              - View hostel fees
+          ================================================= */}
+
+          <Route
+            element={
+              <RoleRoute
+                allowedRoles={[
+                  "admin",
+                  "finance",
+                ]}
+              />
+            }
+          >
+
+            <Route
+              path="/hostel-fees"
+              element={
+                <Layout>
+                  <HostelFees />
                 </Layout>
               }
             />

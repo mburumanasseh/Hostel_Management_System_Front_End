@@ -1,18 +1,13 @@
 import { useEffect, useState } from "react";
 import {
   getMaintenanceRequests,
+  getMyMaintenanceRequests,
   addMaintenanceRequest,
-  getStudents,
-  getRooms,
 } from "../api";
 
 export default function Maintenance() {
   const [requests, setRequests] = useState([]);
-  const [students, setStudents] = useState([]);
-  const [rooms, setRooms] = useState([]);
 
-  const [studentId, setStudentId] = useState("");
-  const [roomId, setRoomId] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState("Medium");
@@ -21,71 +16,107 @@ export default function Maintenance() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  // Load maintenance requests, students and rooms
+  // ==========================================================
+  // GET LOGGED-IN USER
+  // ==========================================================
+
+  const storedUser =
+    localStorage.getItem("user") ||
+    sessionStorage.getItem("user");
+
+  const user = storedUser
+    ? JSON.parse(storedUser)
+    : null;
+
+  const role = user?.role;
+
+
+  // ==========================================================
+  // LOAD MAINTENANCE REQUESTS
+  // ==========================================================
+
   useEffect(() => {
+
     const loadData = async () => {
+
       try {
-        const [maintenanceRes, studentsRes, roomsRes] =
-          await Promise.all([
-            getMaintenanceRequests(),
-            getStudents(),
-            getRooms(),
-          ]);
+
+        let response;
+
+        if (role === "student") {
+
+          // Students only see their own requests.
+          response = await getMyMaintenanceRequests();
+
+        } else {
+
+          // Admin and warden see all requests.
+          response = await getMaintenanceRequests();
+
+        }
 
         setRequests(
-          maintenanceRes.data.requests || []
+          response.data.requests || []
         );
 
-        setStudents(
-          studentsRes.data.students ||
-          studentsRes.data ||
-          []
-        );
-
-        setRooms(
-          roomsRes.data.rooms ||
-          roomsRes.data ||
-          []
-        );
       } catch (err) {
+
         console.error(err);
+
         setError(
           err.response?.data?.error ||
-          "Failed to load maintenance data."
+          "Failed to load maintenance requests."
         );
+
       } finally {
+
         setLoading(false);
+
       }
     };
 
     loadData();
-  }, []);
+
+  }, [role]);
+
+
+  // ==========================================================
+  // SUBMIT REQUEST
+  // ==========================================================
 
   const handleSubmit = async (e) => {
+
     e.preventDefault();
 
     setError("");
 
     if (
-      !studentId ||
-      !roomId ||
       !title.trim() ||
       !description.trim()
     ) {
-      setError("Please fill in all required fields.");
+
+      setError(
+        "Please fill in all required fields."
+      );
+
       return;
     }
 
     setSubmitting(true);
 
     try {
-      const response = await addMaintenanceRequest({
-        student_id: Number(studentId),
-        room_id: Number(roomId),
-        title: title.trim(),
-        description: description.trim(),
-        priority,
-      });
+
+      const response =
+        await addMaintenanceRequest({
+
+          title: title.trim(),
+
+          description:
+            description.trim(),
+
+          priority,
+
+        });
 
       const newRequest =
         response.data.request;
@@ -96,121 +127,128 @@ export default function Maintenance() {
       ]);
 
       // Reset form
-      setStudentId("");
-      setRoomId("");
       setTitle("");
       setDescription("");
       setPriority("Medium");
 
     } catch (err) {
+
       console.error(err);
 
       setError(
         err.response?.data?.error ||
         "Failed to create maintenance request."
       );
+
     } finally {
+
       setSubmitting(false);
+
     }
   };
 
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
+
   return (
+
     <div className="maintenance-page">
 
       {/* HEADER */}
+
       <div className="page-header">
+
         <div>
-          <h1>Maintenance Requests</h1>
+
+          <h1>
+            Maintenance Requests
+          </h1>
+
           <p>
             Report and manage hostel maintenance issues.
           </p>
+
         </div>
+
       </div>
 
+
       {/* ERROR */}
+
       {error && (
+
         <div className="maintenance-error">
+
           {typeof error === "object"
             ? JSON.stringify(error)
             : error}
+
         </div>
+
       )}
 
-      {/* REQUEST FORM */}
+
+      {/* FORM */}
+
       <div className="maintenance-form-card">
 
         <div className="form-header">
-          <h2>Submit Maintenance Request</h2>
+
+          <h2>
+            Submit Maintenance Request
+          </h2>
+
           <p>
             Enter the details of the maintenance issue.
           </p>
+
         </div>
+
 
         <form onSubmit={handleSubmit}>
 
           <div className="form-grid">
 
-            {/* STUDENT */}
-            <div className="form-group">
-              <label>
-                Student <span>*</span>
-              </label>
 
-              <select
-                value={studentId}
-                onChange={(e) =>
-                  setStudentId(e.target.value)
-                }
-                required
-              >
-                <option value="">
-                  Select student
-                </option>
+            {/* ==================================================
+                CURRENT USER
+            ================================================== */}
 
-                {students.map((student) => (
-                  <option
-                    key={student.id}
-                    value={student.id}
-                  >
-                    {student.first_name}{" "}
-                    {student.last_name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {role === "student" && (
 
-            {/* ROOM */}
-            <div className="form-group">
-              <label>
-                Room <span>*</span>
-              </label>
+              <div className="form-group full-width">
 
-              <select
-                value={roomId}
-                onChange={(e) =>
-                  setRoomId(e.target.value)
-                }
-                required
-              >
-                <option value="">
-                  Select room
-                </option>
+                <label>
+                  Student
+                </label>
 
-                {rooms.map((room) => (
-                  <option
-                    key={room.id}
-                    value={room.id}
-                  >
-                    Room {room.room_number ||
-                      room.number ||
-                      room.id}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <input
+                  type="text"
+                  value={
+                    user
+                      ? `${user.first_name} ${user.last_name}`
+                      : "Current user"
+                  }
+                  disabled
+                />
 
-            {/* TITLE */}
+                <small>
+                  Your student account is automatically used.
+                </small>
+
+              </div>
+
+            )}
+
+
+            {/* ==================================================
+                ISSUE TITLE
+            ================================================== */}
+
             <div className="form-group full-width">
+
               <label>
                 Issue Title <span>*</span>
               </label>
@@ -224,10 +262,16 @@ export default function Maintenance() {
                 placeholder="e.g. Broken shower"
                 required
               />
+
             </div>
 
-            {/* DESCRIPTION */}
+
+            {/* ==================================================
+                DESCRIPTION
+            ================================================== */}
+
             <div className="form-group full-width">
+
               <label>
                 Description <span>*</span>
               </label>
@@ -241,11 +285,19 @@ export default function Maintenance() {
                 rows="5"
                 required
               />
+
             </div>
 
-            {/* PRIORITY */}
+
+            {/* ==================================================
+                PRIORITY
+            ================================================== */}
+
             <div className="form-group">
-              <label>Priority</label>
+
+              <label>
+                Priority
+              </label>
 
               <select
                 value={priority}
@@ -253,6 +305,7 @@ export default function Maintenance() {
                   setPriority(e.target.value)
                 }
               >
+
                 <option value="Low">
                   Low
                 </option>
@@ -268,61 +321,99 @@ export default function Maintenance() {
                 <option value="Urgent">
                   Urgent
                 </option>
+
               </select>
+
             </div>
 
           </div>
 
+
+          {/* SUBMIT */}
+
           <div className="form-actions">
+
             <button
               type="submit"
               className="primary-button"
               disabled={submitting}
             >
+
               {submitting
                 ? "Submitting..."
                 : "Submit Request"}
+
             </button>
+
           </div>
 
         </form>
+
       </div>
 
-      {/* REQUESTS TABLE */}
+
+      {/* ======================================================
+          REQUEST TABLE
+      ====================================================== */}
+
       <div className="maintenance-table-card">
 
         <div className="table-header">
+
           <div>
-            <h2>Maintenance Requests</h2>
+
+            <h2>
+              Maintenance Requests
+            </h2>
+
             <p>
-              Recent maintenance issues
+              {role === "student"
+                ? "Your maintenance requests"
+                : "Recent maintenance issues"}
             </p>
+
           </div>
+
         </div>
 
+
         {loading ? (
+
           <div className="empty-state">
             Loading requests...
           </div>
+
         ) : requests.length === 0 ? (
+
           <div className="empty-state">
             No maintenance requests found.
           </div>
+
         ) : (
+
           <div className="table-wrapper">
 
             <table className="maintenance-table">
 
               <thead>
+
                 <tr>
+
                   <th>ID</th>
-                  <th>Student</th>
+
+                  {role !== "student" && (
+                    <th>Student</th>
+                  )}
+
                   <th>Room</th>
                   <th>Title</th>
                   <th>Priority</th>
                   <th>Status</th>
+
                 </tr>
+
               </thead>
+
 
               <tbody>
 
@@ -334,44 +425,67 @@ export default function Maintenance() {
                       {request.id}
                     </td>
 
-                    <td>
-                      {request.student_name ||
-                        request.student ||
-                        request.student_id}
-                    </td>
+
+                    {/* Student column only for staff */}
+
+                    {role !== "student" && (
+
+                      <td>
+                        {request.student_name ||
+                          request.student ||
+                          request.student_id}
+                      </td>
+
+                    )}
+
 
                     <td>
+
                       {request.room_number ||
                         request.room ||
                         request.room_id}
+
                     </td>
 
+
                     <td>
+
                       <strong>
                         {request.title}
                       </strong>
+
                     </td>
 
+
                     <td>
+
                       <span
                         className={`priority-badge ${String(
                           request.priority || "Medium"
                         ).toLowerCase()}`}
                       >
+
                         {request.priority ||
                           "Medium"}
+
                       </span>
+
                     </td>
 
+
                     <td>
+
                       <span
                         className={`status-badge ${String(
                           request.status || "Pending"
                         ).toLowerCase()}`}
                       >
+
                         {request.status ||
                           "Pending"}
+
                       </span>
+
                     </td>
 
                   </tr>
@@ -383,10 +497,12 @@ export default function Maintenance() {
             </table>
 
           </div>
+
         )}
 
       </div>
 
     </div>
+
   );
 }
