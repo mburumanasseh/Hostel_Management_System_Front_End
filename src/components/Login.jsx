@@ -26,7 +26,19 @@ export default function Login() {
         password,
       });
 
+      console.log("LOGIN RESPONSE:", response.data);
+
       const { access_token, user } = response.data;
+
+      if (!access_token || !user) {
+        throw new Error("Invalid login response from server.");
+      }
+
+      /*
+      |--------------------------------------------------------------------------
+      | STORE AUTHENTICATION DATA
+      |--------------------------------------------------------------------------
+      */
 
       if (rememberMe) {
         localStorage.setItem(
@@ -38,6 +50,11 @@ export default function Login() {
           "user",
           JSON.stringify(user)
         );
+
+        // Remove old session data
+        sessionStorage.removeItem("access_token");
+        sessionStorage.removeItem("user");
+
       } else {
         sessionStorage.setItem(
           "access_token",
@@ -48,21 +65,35 @@ export default function Login() {
           "user",
           JSON.stringify(user)
         );
+
+        // Remove old local storage data
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("user");
       }
 
-      console.log(
-        "Logged in user:",
-        user
-      );
+      console.log("Logged in user:", user);
+      console.log("User role:", user.role);
 
-      navigate("/");
+      /*
+      |--------------------------------------------------------------------------
+      | REDIRECT
+      |--------------------------------------------------------------------------
+      */
+
+      navigate("/", {
+        replace: true,
+      });
 
     } catch (err) {
-      console.error(err);
+      console.error(
+        "LOGIN ERROR:",
+        err.response?.data || err
+      );
 
       setError(
         err.response?.data?.error ||
         err.response?.data?.message ||
+        err.message ||
         "Invalid email or password"
       );
 
@@ -82,6 +113,10 @@ export default function Login() {
           Sign in to your hostel management account
         </p>
 
+        {/* =====================================================
+            ERROR
+        ===================================================== */}
+
         {error && (
           <div className="login-error">
             {typeof error === "object"
@@ -92,7 +127,9 @@ export default function Login() {
 
         <form onSubmit={handleLogin}>
 
-          {/* EMAIL */}
+          {/* =====================================================
+              EMAIL
+          ===================================================== */}
 
           <div className="form-group">
 
@@ -107,14 +144,15 @@ export default function Login() {
               onChange={(e) =>
                 setEmail(e.target.value)
               }
-              placeholder="you@mwangaza.ac.ke"
+              placeholder="you@hostel.co.ke"
               required
             />
 
           </div>
 
-
-          {/* PASSWORD */}
+          {/* =====================================================
+              PASSWORD
+          ===================================================== */}
 
           <div className="form-group">
 
@@ -155,8 +193,9 @@ export default function Login() {
 
           </div>
 
-
-          {/* OPTIONS */}
+          {/* =====================================================
+              OPTIONS
+          ===================================================== */}
 
           <div className="login-options">
 
@@ -178,14 +217,11 @@ export default function Login() {
 
             </label>
 
-
             <button
               type="button"
               className="forgot-password"
               onClick={() =>
-                navigate(
-                  "/forgot-password"
-                )
+                navigate("/forgot-password")
               }
             >
               Forgot password?
@@ -193,8 +229,9 @@ export default function Login() {
 
           </div>
 
-
-          {/* LOGIN BUTTON */}
+          {/* =====================================================
+              LOGIN BUTTON
+          ===================================================== */}
 
           <button
             type="submit"
@@ -214,8 +251,9 @@ export default function Login() {
 
         </form>
 
-
-        {/* REGISTER */}
+        {/* =====================================================
+            REGISTER
+        ===================================================== */}
 
         <div className="register-section">
 

@@ -1,8 +1,11 @@
+
 import { useEffect, useState } from "react";
+
 import {
   getMaintenanceRequests,
   getMyMaintenanceRequests,
   addMaintenanceRequest,
+  updateMaintenanceStatus,
 } from "../api";
 
 export default function Maintenance() {
@@ -14,6 +17,7 @@ export default function Maintenance() {
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(null);
   const [error, setError] = useState("");
 
   // ==========================================================
@@ -24,68 +28,69 @@ export default function Maintenance() {
     localStorage.getItem("user") ||
     sessionStorage.getItem("user");
 
-  const user = storedUser
-    ? JSON.parse(storedUser)
-    : null;
+  let user = null;
+
+  try {
+    user = storedUser
+      ? JSON.parse(storedUser)
+      : null;
+  } catch (err) {
+    console.error(
+      "Failed to read logged-in user:",
+      err
+    );
+  }
 
   const role = user?.role;
-
 
   // ==========================================================
   // LOAD MAINTENANCE REQUESTS
   // ==========================================================
 
   useEffect(() => {
-
-    const loadData = async () => {
+    const loadRequests = async () => {
+      setLoading(true);
+      setError("");
 
       try {
-
         let response;
 
         if (role === "student") {
-
-          // Students only see their own requests.
-          response = await getMyMaintenanceRequests();
-
+          // Students see only their own requests.
+          response =
+            await getMyMaintenanceRequests();
         } else {
-
           // Admin and warden see all requests.
-          response = await getMaintenanceRequests();
-
+          response =
+            await getMaintenanceRequests();
         }
 
         setRequests(
           response.data.requests || []
         );
-
       } catch (err) {
-
         console.error(err);
 
         setError(
           err.response?.data?.error ||
-          "Failed to load maintenance requests."
+            "Failed to load maintenance requests."
         );
-
       } finally {
-
         setLoading(false);
-
       }
     };
 
-    loadData();
-
+    if (role) {
+      loadRequests();
+    }
   }, [role]);
 
-
   // ==========================================================
-  // SUBMIT REQUEST
+  // SUBMIT MAINTENANCE REQUEST
+  // STUDENTS ONLY
   // ==========================================================
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
     setError("");
@@ -94,7 +99,6 @@ export default function Maintenance() {
       !title.trim() ||
       !description.trim()
     ) {
-
       setError(
         "Please fill in all required fields."
       );
@@ -105,17 +109,11 @@ export default function Maintenance() {
     setSubmitting(true);
 
     try {
-
       const response =
         await addMaintenanceRequest({
-
           title: title.trim(),
-
-          description:
-            description.trim(),
-
+          description: description.trim(),
           priority,
-
         });
 
       const newRequest =
@@ -132,31 +130,71 @@ export default function Maintenance() {
       setPriority("Medium");
 
     } catch (err) {
-
       console.error(err);
 
       setError(
         err.response?.data?.error ||
-        "Failed to create maintenance request."
+          "Failed to create maintenance request."
       );
-
     } finally {
-
       setSubmitting(false);
-
     }
   };
 
+  // ==========================================================
+  // UPDATE MAINTENANCE STATUS
+  // ADMIN + WARDEN ONLY
+  // ==========================================================
+
+  const handleStatusUpdate = async (
+    requestId,
+    status
+  ) => {
+    setError("");
+    setUpdatingStatus(requestId);
+
+    try {
+      const response =
+        await updateMaintenanceStatus(
+          requestId,
+          {
+            status,
+          }
+        );
+
+      const updatedRequest =
+        response.data.request;
+
+      setRequests((prev) =>
+        prev.map((request) =>
+          request.id === requestId
+            ? updatedRequest
+            : request
+        )
+      );
+
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err.response?.data?.error ||
+          "Failed to update maintenance status."
+      );
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
 
   // ==========================================================
   // RENDER
   // ==========================================================
 
   return (
-
     <div className="maintenance-page">
 
-      {/* HEADER */}
+      {/* ======================================================
+          HEADER
+      ====================================================== */}
 
       <div className="page-header">
 
@@ -167,56 +205,51 @@ export default function Maintenance() {
           </h1>
 
           <p>
-            Report and manage hostel maintenance issues.
+            {role === "student"
+              ? "Report and track your hostel maintenance issues."
+              : "View and manage hostel maintenance requests."}
           </p>
 
         </div>
 
       </div>
 
-
-      {/* ERROR */}
+      {/* ======================================================
+          ERROR
+      ====================================================== */}
 
       {error && (
-
         <div className="maintenance-error">
-
           {typeof error === "object"
             ? JSON.stringify(error)
             : error}
-
         </div>
-
       )}
 
+      {/* ======================================================
+          STUDENT MAINTENANCE FORM
+      ====================================================== */}
 
-      {/* FORM */}
+      {role === "student" && (
+        <div className="maintenance-form-card">
 
-      <div className="maintenance-form-card">
+          <div className="form-header">
 
-        <div className="form-header">
+            <h2>
+              Submit Maintenance Request
+            </h2>
 
-          <h2>
-            Submit Maintenance Request
-          </h2>
+            <p>
+              Enter the details of the maintenance issue.
+            </p>
 
-          <p>
-            Enter the details of the maintenance issue.
-          </p>
+          </div>
 
-        </div>
+          <form onSubmit={handleSubmit}>
 
+            <div className="form-grid">
 
-        <form onSubmit={handleSubmit}>
-
-          <div className="form-grid">
-
-
-            {/* ==================================================
-                CURRENT USER
-            ================================================== */}
-
-            {role === "student" && (
+              {/* CURRENT STUDENT */}
 
               <div className="form-group full-width">
 
@@ -228,7 +261,9 @@ export default function Maintenance() {
                   type="text"
                   value={
                     user
-                      ? `${user.first_name} ${user.last_name}`
+                      ? `${user.first_name || ""} ${
+                          user.last_name || ""
+                        }`.trim()
                       : "Current user"
                   }
                   disabled
@@ -240,120 +275,110 @@ export default function Maintenance() {
 
               </div>
 
-            )}
+              {/* TITLE */}
 
+              <div className="form-group full-width">
 
-            {/* ==================================================
-                ISSUE TITLE
-            ================================================== */}
+                <label>
+                  Issue Title <span>*</span>
+                </label>
 
-            <div className="form-group full-width">
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) =>
+                    setTitle(e.target.value)
+                  }
+                  placeholder="e.g. Broken shower"
+                  required
+                />
 
-              <label>
-                Issue Title <span>*</span>
-              </label>
+              </div>
 
-              <input
-                type="text"
-                value={title}
-                onChange={(e) =>
-                  setTitle(e.target.value)
-                }
-                placeholder="e.g. Broken shower"
-                required
-              />
+              {/* DESCRIPTION */}
+
+              <div className="form-group full-width">
+
+                <label>
+                  Description <span>*</span>
+                </label>
+
+                <textarea
+                  value={description}
+                  onChange={(e) =>
+                    setDescription(
+                      e.target.value
+                    )
+                  }
+                  placeholder="Describe the problem in detail..."
+                  rows="5"
+                  required
+                />
+
+              </div>
+
+              {/* PRIORITY */}
+
+              <div className="form-group">
+
+                <label>
+                  Priority
+                </label>
+
+                <select
+                  value={priority}
+                  onChange={(e) =>
+                    setPriority(
+                      e.target.value
+                    )
+                  }
+                >
+
+                  <option value="Low">
+                    Low
+                  </option>
+
+                  <option value="Medium">
+                    Medium
+                  </option>
+
+                  <option value="High">
+                    High
+                  </option>
+
+                  <option value="Urgent">
+                    Urgent
+                  </option>
+
+                </select>
+
+              </div>
 
             </div>
 
+            {/* SUBMIT */}
 
-            {/* ==================================================
-                DESCRIPTION
-            ================================================== */}
+            <div className="form-actions">
 
-            <div className="form-group full-width">
-
-              <label>
-                Description <span>*</span>
-              </label>
-
-              <textarea
-                value={description}
-                onChange={(e) =>
-                  setDescription(e.target.value)
-                }
-                placeholder="Describe the problem in detail..."
-                rows="5"
-                required
-              />
-
-            </div>
-
-
-            {/* ==================================================
-                PRIORITY
-            ================================================== */}
-
-            <div className="form-group">
-
-              <label>
-                Priority
-              </label>
-
-              <select
-                value={priority}
-                onChange={(e) =>
-                  setPriority(e.target.value)
-                }
+              <button
+                type="submit"
+                className="primary-button"
+                disabled={submitting}
               >
-
-                <option value="Low">
-                  Low
-                </option>
-
-                <option value="Medium">
-                  Medium
-                </option>
-
-                <option value="High">
-                  High
-                </option>
-
-                <option value="Urgent">
-                  Urgent
-                </option>
-
-              </select>
+                {submitting
+                  ? "Submitting..."
+                  : "Submit Request"}
+              </button>
 
             </div>
 
-          </div>
+          </form>
 
-
-          {/* SUBMIT */}
-
-          <div className="form-actions">
-
-            <button
-              type="submit"
-              className="primary-button"
-              disabled={submitting}
-            >
-
-              {submitting
-                ? "Submitting..."
-                : "Submit Request"}
-
-            </button>
-
-          </div>
-
-        </form>
-
-      </div>
-
+        </div>
+      )}
 
       {/* ======================================================
-          REQUEST TABLE
+          MAINTENANCE REQUEST TABLE
       ====================================================== */}
 
       <div className="maintenance-table-card">
@@ -376,6 +401,9 @@ export default function Maintenance() {
 
         </div>
 
+        {/* ====================================================
+            LOADING
+        ==================================================== */}
 
         {loading ? (
 
@@ -399,21 +427,44 @@ export default function Maintenance() {
 
                 <tr>
 
-                  <th>ID</th>
+                  <th>
+                    ID
+                  </th>
 
                   {role !== "student" && (
-                    <th>Student</th>
+                    <th>
+                      Student
+                    </th>
                   )}
 
-                  <th>Room</th>
-                  <th>Title</th>
-                  <th>Priority</th>
-                  <th>Status</th>
+                  <th>
+                    Room
+                  </th>
+
+                  <th>
+                    Title
+                  </th>
+
+                  <th>
+                    Priority
+                  </th>
+
+                  <th>
+                    Status
+                  </th>
+
+                  {/* ACTION COLUMN */}
+
+                  {(role === "warden" ||
+                    role === "admin") && (
+                    <th>
+                      Action
+                    </th>
+                  )}
 
                 </tr>
 
               </thead>
-
 
               <tbody>
 
@@ -421,72 +472,118 @@ export default function Maintenance() {
 
                   <tr key={request.id}>
 
+                    {/* ID */}
+
                     <td>
                       {request.id}
                     </td>
 
-
-                    {/* Student column only for staff */}
+                    {/* STUDENT */}
 
                     {role !== "student" && (
-
                       <td>
                         {request.student_name ||
                           request.student ||
-                          request.student_id}
+                          request.student_id ||
+                          "N/A"}
                       </td>
-
                     )}
 
+                    {/* ROOM */}
 
                     <td>
-
                       {request.room_number ||
                         request.room ||
-                        request.room_id}
-
+                        request.room_id ||
+                        "N/A"}
                     </td>
 
+                    {/* TITLE */}
 
                     <td>
-
                       <strong>
                         {request.title}
                       </strong>
-
                     </td>
 
+                    {/* PRIORITY */}
 
                     <td>
 
                       <span
                         className={`priority-badge ${String(
-                          request.priority || "Medium"
+                          request.priority ||
+                            "Medium"
                         ).toLowerCase()}`}
                       >
-
                         {request.priority ||
                           "Medium"}
-
                       </span>
 
                     </td>
 
+                    {/* STATUS */}
 
                     <td>
 
                       <span
                         className={`status-badge ${String(
-                          request.status || "Pending"
-                        ).toLowerCase()}`}
+                          request.status ||
+                            "Pending"
+                        )
+                          .toLowerCase()
+                          .replace(
+                            /\s+/g,
+                            "-"
+                          )}`}
                       >
-
                         {request.status ||
                           "Pending"}
-
                       </span>
 
                     </td>
+
+                    {/* ACTION */}
+
+                    {(role === "warden" ||
+                      role === "admin") && (
+
+                      <td>
+
+                        {request.status !==
+                          "Resolved" ? (
+
+                          <button
+                            type="button"
+                            className="status-update-button"
+                            disabled={
+                              updatingStatus ===
+                              request.id
+                            }
+                            onClick={() =>
+                              handleStatusUpdate(
+                                request.id,
+                                "Resolved"
+                              )
+                            }
+                          >
+                            {updatingStatus ===
+                            request.id
+                              ? "Updating..."
+                              : "Mark as Resolved"}
+                          </button>
+
+                        ) : (
+
+                          <span className="completed-label">
+                            Resolved
+                          </span>
+
+                        )}
+
+                      </td>
+
+                    )}
 
                   </tr>
 
@@ -503,6 +600,5 @@ export default function Maintenance() {
       </div>
 
     </div>
-
   );
 }

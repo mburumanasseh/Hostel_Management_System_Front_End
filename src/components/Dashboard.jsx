@@ -1,4 +1,6 @@
+
 import { useEffect, useState } from "react";
+
 import {
   getStudents,
   getRooms,
@@ -26,9 +28,21 @@ export default function Dashboard() {
     maintenance: 0,
   });
 
-  const [maintenanceRequests, setMaintenanceRequests] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [rooms, setRooms] = useState([]);
+  const [maintenanceRequests, setMaintenanceRequests] =
+    useState([]);
+
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  /*
+  |--------------------------------------------------------------------------
+  | LOAD DASHBOARD DATA
+  |--------------------------------------------------------------------------
+  */
 
   useEffect(() => {
     const loadDashboard = async () => {
@@ -40,14 +54,14 @@ export default function Dashboard() {
           getMaintenanceRequests(),
         ]);
 
-        const students =
+        const studentsData =
           results[0].status === "fulfilled"
             ? results[0].value.data.students ||
               results[0].value.data ||
               []
             : [];
 
-        const rooms =
+        const roomsData =
           results[1].status === "fulfilled"
             ? results[1].value.data.rooms ||
               results[1].value.data ||
@@ -64,21 +78,25 @@ export default function Dashboard() {
             ? results[3].value.data.requests || []
             : [];
 
+        setStudents(studentsData);
+        setRooms(roomsData);
+        setMaintenanceRequests(maintenance);
+
         setStats({
-          students: students.length,
-          rooms: rooms.length,
+          students: studentsData.length,
+          rooms: roomsData.length,
           allocations: allocations.length,
           maintenance: maintenance.length,
         });
-
-        setMaintenanceRequests(maintenance);
 
         if (
           results.every(
             (result) => result.status === "rejected"
           )
         ) {
-          setError("Could not connect to the backend.");
+          setError(
+            "Could not connect to the backend."
+          );
         }
       } catch (err) {
         console.error(err);
@@ -91,17 +109,63 @@ export default function Dashboard() {
     loadDashboard();
   }, []);
 
-  if (loading) {
+  /*
+  |--------------------------------------------------------------------------
+  | SEARCH
+  |--------------------------------------------------------------------------
+  */
+
+  const search = searchTerm.trim().toLowerCase();
+
+  const filteredStudents = students.filter(
+    (student) => {
+      if (!search) {
+        return true;
+      }
+
+      return (
+        String(student.first_name || "")
+          .toLowerCase()
+          .includes(search) ||
+        String(student.last_name || "")
+          .toLowerCase()
+          .includes(search) ||
+        String(student.registration_number || "")
+          .toLowerCase()
+          .includes(search) ||
+        String(student.email || "")
+          .toLowerCase()
+          .includes(search)
+      );
+    }
+  );
+
+  const filteredRooms = rooms.filter((room) => {
+    if (!search) {
+      return true;
+    }
+
     return (
-      <div className="dashboard-loading">
-        Loading dashboard...
-      </div>
+      String(room.room_number || "")
+        .toLowerCase()
+        .includes(search) ||
+      String(room.number || "")
+        .toLowerCase()
+        .includes(search) ||
+      String(room.name || "")
+        .toLowerCase()
+        .includes(search) ||
+      String(room.block_name || "")
+        .toLowerCase()
+        .includes(search)
     );
-  }
+  });
 
   /*
-   * Maintenance statistics
-   */
+  |--------------------------------------------------------------------------
+  | MAINTENANCE STATISTICS
+  |--------------------------------------------------------------------------
+  */
 
   const pending = maintenanceRequests.filter(
     (request) =>
@@ -109,14 +173,27 @@ export default function Dashboard() {
   ).length;
 
   const resolved = maintenanceRequests.filter(
-    (request) =>
-      request.status?.toLowerCase() === "resolved"
+    (request) => {
+      const status =
+        request.status?.toLowerCase();
+
+      return (
+        status === "done" ||
+        status === "resolved"
+      );
+    }
   ).length;
 
   const inProgress = maintenanceRequests.filter(
-    (request) =>
-      request.status?.toLowerCase() === "in progress" ||
-      request.status?.toLowerCase() === "in_progress"
+    (request) => {
+      const status =
+        request.status?.toLowerCase();
+
+      return (
+        status === "in progress" ||
+        status === "in_progress"
+      );
+    }
   ).length;
 
   const urgent = maintenanceRequests.filter(
@@ -125,8 +202,10 @@ export default function Dashboard() {
   ).length;
 
   /*
-   * Occupancy
-   */
+  |--------------------------------------------------------------------------
+  | OCCUPANCY
+  |--------------------------------------------------------------------------
+  */
 
   const occupiedRooms = stats.allocations;
 
@@ -137,16 +216,16 @@ export default function Dashboard() {
 
   const occupancyRate =
     stats.rooms > 0
-      ? ((occupiedRooms / stats.rooms) * 100).toFixed(1)
+      ? ((occupiedRooms / stats.rooms) * 100).toFixed(
+          1
+        )
       : 0;
 
   /*
-   * Chart data
-   *
-   * Your backend currently doesn't provide
-   * occupancy grouped by block, so we don't
-   * invent block numbers here.
-   */
+  |--------------------------------------------------------------------------
+  | CHART DATA
+  |--------------------------------------------------------------------------
+  */
 
   const occupancyData = [
     {
@@ -158,7 +237,7 @@ export default function Dashboard() {
 
   const maintenanceData = [
     {
-      name: "Resolved",
+      name: "Done",
       value: resolved,
     },
     {
@@ -182,12 +261,30 @@ export default function Dashboard() {
     "#dc2626",
   ];
 
+  /*
+  |--------------------------------------------------------------------------
+  | LOADING
+  |--------------------------------------------------------------------------
+  */
+
+  if (loading) {
+    return (
+      <div className="dashboard-loading">
+        Loading dashboard...
+      </div>
+    );
+  }
+
+  /*
+  |--------------------------------------------------------------------------
+  | DASHBOARD
+  |--------------------------------------------------------------------------
+  */
+
   return (
     <div className="dashboard-page">
 
-      {/* ================================
-          PAGE HEADER
-      ================================= */}
+      {/* HEADER */}
 
       <div className="dashboard-header">
 
@@ -201,17 +298,29 @@ export default function Dashboard() {
 
         <div className="dashboard-actions">
 
+          {/* SEARCH */}
+
           <div className="search-box">
+
             <span>⌕</span>
 
             <input
               type="text"
+              value={searchTerm}
+              onChange={(e) =>
+                setSearchTerm(e.target.value)
+              }
               placeholder="Search students, rooms..."
             />
+
           </div>
 
-          <button className="notification-button">
+          <button
+            type="button"
+            className="notification-button"
+          >
             ♧
+
             {urgent > 0 && (
               <span className="notification-dot"></span>
             )}
@@ -226,6 +335,92 @@ export default function Dashboard() {
       </div>
 
 
+      {/* SEARCH RESULTS */}
+
+      {searchTerm.trim() && (
+        <div className="dashboard-search-results">
+
+          <div className="search-result-section">
+
+            <h3>
+              Students ({filteredStudents.length})
+            </h3>
+
+            {filteredStudents.length === 0 ? (
+              <p>No students found.</p>
+            ) : (
+              <div className="search-result-list">
+
+                {filteredStudents
+                  .slice(0, 5)
+                  .map((student) => (
+                    <div
+                      className="search-result-item"
+                      key={student.id}
+                    >
+                      <strong>
+                        {student.first_name || ""}{" "}
+                        {student.last_name || ""}
+                      </strong>
+
+                      <span>
+                        {student.registration_number ||
+                          student.email ||
+                          "No registration number"}
+                      </span>
+                    </div>
+                  ))}
+
+              </div>
+            )}
+
+          </div>
+
+
+          <div className="search-result-section">
+
+            <h3>
+              Rooms ({filteredRooms.length})
+            </h3>
+
+            {filteredRooms.length === 0 ? (
+              <p>No rooms found.</p>
+            ) : (
+              <div className="search-result-list">
+
+                {filteredRooms
+                  .slice(0, 5)
+                  .map((room) => (
+                    <div
+                      className="search-result-item"
+                      key={room.id}
+                    >
+                      <strong>
+                        Room{" "}
+                        {room.room_number ||
+                          room.number ||
+                          room.name}
+                      </strong>
+
+                      <span>
+                        {room.block_name ||
+                          room.block ||
+                          "Hostel room"}
+                      </span>
+                    </div>
+                  ))}
+
+              </div>
+            )}
+
+          </div>
+
+        </div>
+      )}
+
+
+      {/* ERROR */}
+
       {error && (
         <div className="dashboard-error">
           {error}
@@ -233,9 +428,7 @@ export default function Dashboard() {
       )}
 
 
-      {/* ================================
-          METRIC CARDS
-      ================================= */}
+      {/* METRIC CARDS */}
 
       <div className="metrics-grid">
 
@@ -365,19 +558,18 @@ export default function Dashboard() {
       </div>
 
 
-      {/* ================================
-          CHARTS
-      ================================= */}
+      {/* CHARTS */}
 
       <div className="charts-grid">
 
-        {/* BLOCK / ROOM OCCUPANCY */}
+        {/* ROOM OCCUPANCY */}
 
         <div className="chart-card">
 
           <div className="chart-header">
 
             <div>
+
               <h3>
                 Room Occupancy
               </h3>
@@ -385,6 +577,7 @@ export default function Dashboard() {
               <p>
                 Current hostel capacity
               </p>
+
             </div>
 
             <div className="chart-legend">
@@ -432,14 +625,24 @@ export default function Dashboard() {
                   dataKey="occupied"
                   name="Occupied"
                   fill="#159a94"
-                  radius={[5, 5, 0, 0]}
+                  radius={[
+                    5,
+                    5,
+                    0,
+                    0,
+                  ]}
                 />
 
                 <Bar
                   dataKey="available"
                   name="Available"
                   fill="#d8eeee"
-                  radius={[5, 5, 0, 0]}
+                  radius={[
+                    5,
+                    5,
+                    0,
+                    0,
+                  ]}
                 />
 
               </BarChart>
@@ -574,9 +777,7 @@ export default function Dashboard() {
       </div>
 
 
-      {/* ================================
-          ALERTS
-      ================================= */}
+      {/* ALERTS */}
 
       <div className="alerts-card">
 
@@ -593,7 +794,9 @@ export default function Dashboard() {
           <p>
             {urgent > 0
               ? `${urgent} urgent maintenance request${
-                  urgent > 1 ? "s" : ""
+                  urgent > 1
+                    ? "s"
+                    : ""
                 } require attention.`
               : "No urgent maintenance requests."}
           </p>
