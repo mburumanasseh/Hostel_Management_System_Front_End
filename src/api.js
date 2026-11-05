@@ -1,8 +1,13 @@
 
 import axios from "axios";
 
+// Set VITE_API_URL in .env (local) or host env (Vercel/Netlify/Render).
+// Example production: VITE_API_URL=https://your-service.onrender.com/api
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
