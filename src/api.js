@@ -536,7 +536,6 @@ export const getDashboardData = async () => {
 export const logout = () => {
   localStorage.removeItem("access_token");
   localStorage.removeItem("user");
-
   sessionStorage.removeItem("access_token");
   sessionStorage.removeItem("user");
 };

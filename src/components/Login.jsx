@@ -1,7 +1,12 @@
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../api";
+import {
+  clearAuth,
+  getLoggedInUser,
+  getToken,
+  saveAuth,
+} from "../utils/auth";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -11,61 +16,56 @@ export default function Login() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [existingUser, setExistingUser] = useState(null);
 
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Show switch-account only if a token is still present in this browser.
+    // Do not auto-enter the app — user must sign in or explicitly continue.
+    const token = getToken();
+    const user = getLoggedInUser();
+    if (token && user) {
+      setExistingUser(user);
+    } else {
+      clearAuth();
+      setExistingUser(null);
+    }
+  }, []);
+
+  const handleSwitchAccount = () => {
+    clearAuth();
+    setExistingUser(null);
+    setEmail("");
+    setPassword("");
+    setError("");
+  };
+
+  const handleContinue = () => {
+    navigate("/");
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
-
     setLoading(true);
     setError("");
 
     try {
-      const response = await login({
-        email,
-        password,
-      });
+      // Always start clean so a previous finance/admin session cannot stick
+      clearAuth();
 
+      const response = await login({ email, password });
       const { access_token, user } = response.data;
 
-      if (rememberMe) {
-        localStorage.setItem(
-          "access_token",
-          access_token
-        );
-
-        localStorage.setItem(
-          "user",
-          JSON.stringify(user)
-        );
-      } else {
-        sessionStorage.setItem(
-          "access_token",
-          access_token
-        );
-
-        sessionStorage.setItem(
-          "user",
-          JSON.stringify(user)
-        );
-      }
-
-      console.log(
-        "Logged in user:",
-        user
-      );
-
+      saveAuth(access_token, user, rememberMe);
       navigate("/");
-
     } catch (err) {
       console.error(err);
-
       setError(
         err.response?.data?.error ||
-        err.response?.data?.message ||
-        "Invalid email or password"
+          err.response?.data?.message ||
+          "Invalid email or password"
       );
-
     } finally {
       setLoading(false);
     }
@@ -73,170 +73,153 @@ export default function Login() {
 
   return (
     <div className="login-page">
-
       <div className="login-card">
-
         <h1>Welcome back</h1>
-
         <p className="login-subtitle">
           Sign in to your hostel management account
         </p>
 
+        {existingUser && (
+          <div
+            style={{
+              marginBottom: "1rem",
+              padding: "0.85rem 1rem",
+              borderRadius: 8,
+              background: "rgba(59,130,246,0.12)",
+              border: "1px solid rgba(59,130,246,0.3)",
+              fontSize: "0.95rem",
+            }}
+          >
+            <p style={{ margin: 0 }}>
+              This browser still has a session for{" "}
+              <strong>
+                {existingUser.first_name} {existingUser.last_name}
+              </strong>{" "}
+              ({existingUser.role}).
+            </p>
+            <div
+              style={{
+                display: "flex",
+                gap: "0.5rem",
+                marginTop: "0.75rem",
+                flexWrap: "wrap",
+              }}
+            >
+              <button
+                type="button"
+                className="login-button"
+                onClick={handleContinue}
+                style={{ padding: "0.45rem 0.9rem" }}
+              >
+                Continue as {existingUser.first_name}
+              </button>
+              <button
+                type="button"
+                onClick={handleSwitchAccount}
+                style={{
+                  padding: "0.45rem 0.9rem",
+                  borderRadius: 8,
+                  border: "1px solid #555",
+                  background: "transparent",
+                  color: "inherit",
+                  cursor: "pointer",
+                }}
+              >
+                Use a different account
+              </button>
+            </div>
+          </div>
+        )}
+
         {error && (
           <div className="login-error">
-            {typeof error === "object"
-              ? JSON.stringify(error)
-              : error}
+            {typeof error === "object" ? JSON.stringify(error) : error}
           </div>
         )}
 
         <form onSubmit={handleLogin}>
-
-          {/* EMAIL */}
-
           <div className="form-group">
-
-            <label htmlFor="email">
-              EMAIL ADDRESS
-            </label>
-
+            <label htmlFor="email">EMAIL ADDRESS</label>
             <input
               id="email"
               type="email"
               value={email}
-              onChange={(e) =>
-                setEmail(e.target.value)
-              }
-              placeholder="you@mwangaza.ac.ke"
+              onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="username"
             />
-
           </div>
-
-
-          {/* PASSWORD */}
 
           <div className="form-group">
-
-            <label htmlFor="password">
-              PASSWORD
-            </label>
-
-            <div className="password-wrapper">
-
+            <label htmlFor="password">PASSWORD</label>
+            <div style={{ position: "relative" }}>
               <input
                 id="password"
-                type={
-                  showPassword
-                    ? "text"
-                    : "password"
-                }
+                type={showPassword ? "text" : "password"}
                 value={password}
-                onChange={(e) =>
-                  setPassword(e.target.value)
-                }
-                placeholder="Enter your password"
+                onChange={(e) => setPassword(e.target.value)}
                 required
+                autoComplete="current-password"
               />
-
               <button
                 type="button"
-                className="password-toggle"
-                onClick={() =>
-                  setShowPassword(
-                    !showPassword
-                  )
-                }
+                onClick={() => setShowPassword((v) => !v)}
+                style={{
+                  position: "absolute",
+                  right: 8,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "inherit",
+                  opacity: 0.7,
+                }}
               >
-                ◉
+                {showPassword ? "Hide" : "Show"}
               </button>
-
             </div>
-
           </div>
 
-
-          {/* OPTIONS */}
-
-          <div className="login-options">
-
-            <label className="remember-me">
-
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) =>
-                  setRememberMe(
-                    e.target.checked
-                  )
-                }
-              />
-
-              <span>
-                Remember me
-              </span>
-
+          <div
+            className="form-group"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "0.5rem",
+            }}
+          >
+            <input
+              id="remember"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+            />
+            <label htmlFor="remember" style={{ margin: 0 }}>
+              Remember me on this device
             </label>
-
-
-            <button
-              type="button"
-              className="forgot-password"
-              onClick={() =>
-                navigate(
-                  "/forgot-password"
-                )
-              }
-            >
-              Forgot password?
-            </button>
-
           </div>
-
-
-          {/* LOGIN BUTTON */}
 
           <button
             type="submit"
             className="login-button"
             disabled={loading}
           >
-
-            <span className="login-icon">
-              ↪
-            </span>
-
-            {loading
-              ? "Signing in..."
-              : "Sign In"}
-
+            {loading ? "Signing in..." : "Sign in"}
           </button>
-
         </form>
 
-
-        {/* REGISTER */}
-
-        <div className="register-section">
-
-          <span>
-            New staff member?
-          </span>{" "}
-
+        <div className="login-footer" style={{ marginTop: "1rem" }}>
+          <span>New student?</span>{" "}
           <button
             type="button"
             className="create-account"
-            onClick={() =>
-              navigate("/register")
-            }
+            onClick={() => navigate("/register")}
           >
             Create an account
           </button>
-
         </div>
-
       </div>
-
     </div>
   );
 }
