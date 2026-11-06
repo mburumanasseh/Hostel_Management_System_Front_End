@@ -1,26 +1,29 @@
 /**
- * Ping the Render backend on an interval so free-tier instances
+ * Ping the Render backend health endpoint so free-tier instances
  * stay awake while this frontend tab is open.
  */
 const DEFAULT_ORIGIN =
   "https://hostel-management-system-back-end-1.onrender.com";
 
-function resolveOrigin() {
+function resolveHealthUrl() {
   const api =
     import.meta.env.VITE_API_URL ||
     `${DEFAULT_ORIGIN}/api`;
   try {
     const u = new URL(api, window.location.origin);
-    // strip trailing /api if present
-    return u.origin;
+    // Prefer /api/health when base already ends with /api
+    const path = u.pathname.replace(/\/$/, "");
+    if (path.endsWith("/api") || path === "/api") {
+      return `${u.origin}/api/health`;
+    }
+    return `${u.origin}/api/health`;
   } catch {
-    return DEFAULT_ORIGIN;
+    return `${DEFAULT_ORIGIN}/api/health`;
   }
 }
 
 export function startApiKeepAlive(intervalMs = 30000) {
-  const origin = resolveOrigin();
-  const url = `${origin}/`;
+  const url = resolveHealthUrl();
 
   const ping = () => {
     fetch(url, {
@@ -32,10 +35,7 @@ export function startApiKeepAlive(intervalMs = 30000) {
     });
   };
 
-  // immediate wake
   ping();
-
   const id = window.setInterval(ping, intervalMs);
-
   return () => window.clearInterval(id);
 }
