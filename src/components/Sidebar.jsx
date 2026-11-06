@@ -1,319 +1,206 @@
-
 import { Link, useLocation } from "react-router-dom";
+import { getLoggedInUser } from "../utils/auth";
 
-export default function Sidebar() {
+const ICONS = {
+  dashboard: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="3" width="7" height="9" rx="1" />
+      <rect x="14" y="3" width="7" height="5" rx="1" />
+      <rect x="14" y="12" width="7" height="9" rx="1" />
+      <rect x="3" y="16" width="7" height="5" rx="1" />
+    </svg>
+  ),
+  bookRoom: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 21h18" />
+      <path d="M5 21V7l7-4 7 4v14" />
+      <path d="M9 21v-6h6v6" />
+      <path d="M9 10h.01M15 10h.01" />
+    </svg>
+  ),
+  roomAllocation: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M2 20h20" />
+      <path d="M4 20V10l8-5 8 5v10" />
+      <path d="M9 20v-6h6v6" />
+      <circle cx="12" cy="10" r="1.5" fill="currentColor" stroke="none" />
+    </svg>
+  ),
+  maintenance: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+    </svg>
+  ),
+  payments: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <path d="M2 10h20" />
+      <path d="M6 15h4" />
+    </svg>
+  ),
+  hostelFees: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 1v22" />
+      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    </svg>
+  ),
+  feeTracking: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 3v18h18" />
+      <path d="M7 16l4-8 4 4 4-6" />
+    </svg>
+  ),
+};
+
+export default function Sidebar({ collapsed, onToggle }) {
   const location = useLocation();
-
-  /*
-  |--------------------------------------------------------------------------
-  | GET LOGGED-IN USER
-  |--------------------------------------------------------------------------
-  */
-
-  const storedUser =
-    localStorage.getItem("user") ||
-    sessionStorage.getItem("user");
-
-  let user = null;
-
-  try {
-    user = storedUser
-      ? JSON.parse(storedUser)
-      : null;
-  } catch (error) {
-    console.error(
-      "Failed to read logged-in user:",
-      error
-    );
-  }
-
+  const user = getLoggedInUser();
   const role = user?.role;
-
-
-  /*
-  |--------------------------------------------------------------------------
-  | MENU ITEMS
-  |--------------------------------------------------------------------------
-  |
-  | Each menu item specifies which roles are allowed to see it.
-  |
-  */
 
   const menuItems = [
     {
       name: "Dashboard",
       path: "/",
-      roles: [
-        "admin",
-        "finance",
-        "warden",
-        "student"
-      ],
+      icon: "dashboard",
+      roles: ["admin", "finance", "warden", "student"],
     },
     {
-      label: "Book a Room",
+      name: "Book a Room",
       path: "/book-room",
-      roles: [
-        "student"
-      ]
+      icon: "bookRoom",
+      roles: ["student"],
     },
-
-
     {
       name: "Room Allocation",
       path: "/room-allocation",
-      roles: [
-        "admin",
-        "warden",
-        "student"
-      ],
+      icon: "roomAllocation",
+      roles: ["admin", "warden", "student"],
     },
-
     {
       name: "Maintenance",
       path: "/maintenance",
-      roles: [
-        "admin",
-        "warden",
-        "student"
-      ],
+      icon: "maintenance",
+      roles: ["admin", "warden", "student"],
     },
-
     {
       name: "Payments",
       path: "/payments",
-      roles: [
-        "admin",
-        "finance"
-      ],
+      icon: "payments",
+      roles: ["admin", "finance"],
     },
-
     {
       name: "Hostel Fees",
       path: "/hostel-fees",
-      roles: [
-        "admin",
-        "finance"
-      ],
+      icon: "hostelFees",
+      roles: ["admin", "finance"],
     },
-
     {
-      name: "Fee Tracking",
+      name: "My Fees",
       path: "/student-fee-tracking",
-      roles: [
-        "student"
-      ],
+      icon: "feeTracking",
+      roles: ["student"],
     },
-
     {
       name: "Fee Tracking",
       path: "/fee-tracking",
-      roles: [
-        "admin",
-        "finance",
-        "warden"
-      ],
+      icon: "feeTracking",
+      roles: ["admin", "finance", "warden"],
     },
   ];
-
-
-  /*
-  |--------------------------------------------------------------------------
-  | FILTER MENU BY USER ROLE
-  |--------------------------------------------------------------------------
-  |
-  | Only menu items whose roles include the current user's role
-  | will be displayed.
-  |
-  */
 
   const visibleMenuItems = menuItems.filter((item) =>
     item.roles.includes(role)
   );
 
-
-  /*
-  |--------------------------------------------------------------------------
-  | ACTIVE LINK
-  |--------------------------------------------------------------------------
-  */
-
   const isActive = (path) => {
-    if (path === "/") {
-      return location.pathname === "/";
-    }
-
-    return location.pathname === path;
+    if (path === "/") return location.pathname === "/";
+    return location.pathname === path || location.pathname.startsWith(path + "/");
   };
-
-
-  /*
-  |--------------------------------------------------------------------------
-  | FULL NAME
-  |--------------------------------------------------------------------------
-  */
 
   const getFullName = () => {
-    if (!user) {
-      return "User";
-    }
-
-    const firstName =
-      user.first_name?.trim() || "";
-
-    const lastName =
-      user.last_name?.trim() || "";
-
-    const fullName =
-      `${firstName} ${lastName}`.trim();
-
-    return fullName || "User";
+    if (!user) return "User";
+    const full = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+    return full || "User";
   };
-
-
-  /*
-  |--------------------------------------------------------------------------
-  | ROLE / STATUS
-  |--------------------------------------------------------------------------
-  */
 
   const getRoleLabel = () => {
     switch (role) {
-
       case "student":
         return "Student";
-
       case "admin":
         return "Administrator";
-
       case "warden":
         return "Warden";
-
       case "finance":
         return "Finance Officer";
-
       default:
         return "User";
     }
   };
 
-
-  /*
-  |--------------------------------------------------------------------------
-  | USER INITIALS
-  |--------------------------------------------------------------------------
-  */
-
   const getInitials = () => {
-    if (!user) {
-      return "U";
-    }
-
-    const firstName =
-      user.first_name?.trim() || "";
-
-    const lastName =
-      user.last_name?.trim() || "";
-
-    const firstInitial =
-      firstName.charAt(0).toUpperCase();
-
-    const lastInitial =
-      lastName.charAt(0).toUpperCase();
-
-    if (firstInitial && lastInitial) {
-      return `${firstInitial}${lastInitial}`;
-    }
-
-    if (firstInitial) {
-      return firstInitial;
-    }
-
-    if (lastInitial) {
-      return lastInitial;
-    }
-
-    return "U";
+    if (!user) return "U";
+    const a = (user.first_name || "").charAt(0).toUpperCase();
+    const b = (user.last_name || "").charAt(0).toUpperCase();
+    return a + b || "U";
   };
 
-
-  /*
-  |--------------------------------------------------------------------------
-  | SIDEBAR
-  |--------------------------------------------------------------------------
-  */
-
   return (
-    <div className="sidebar">
-
-      {/* =====================================================
-          LOGO
-      ===================================================== */}
-
-      <h2>HostelMS</h2>
-
-
-      {/* =====================================================
-          NAVIGATION
-      ===================================================== */}
-
-      <ul>
-
-        {visibleMenuItems.map((item) => (
-
-          <li
-            key={item.path}
-            className={
-              isActive(item.path)
-                ? "active"
-                : ""
-            }
-          >
-
-            <Link to={item.path}>
-              {item.name}
-            </Link>
-
-          </li>
-
-        ))}
-
-      </ul>
-
-
-      {/* =====================================================
-          LOGGED-IN USER
-      ===================================================== */}
-
-      <footer>
-
-        <div className="sidebar-user">
-
-          {/* INITIALS */}
-
-          <div className="sidebar-avatar">
-            {getInitials()}
-          </div>
-
-
-          {/* NAME + ROLE */}
-
-          <div className="sidebar-user-info">
-
-            <strong>
-              {getFullName()}
-            </strong>
-
-            <span>
-              {getRoleLabel()}
-            </span>
-
-          </div>
-
+    <aside
+      className={`sidebar${collapsed ? " sidebar--collapsed" : ""}`}
+      aria-label="Main navigation"
+    >
+      <div className="sidebar-header">
+        <div className="sidebar-brand">
+          {!collapsed && <h2>HostelMS</h2>}
+          {collapsed && <h2 className="sidebar-brand-mark">H</h2>}
         </div>
 
-      </footer>
+        <button
+          type="button"
+          className="sidebar-toggle"
+          onClick={onToggle}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={collapsed ? "Expand" : "Collapse"}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {collapsed ? (
+              <>
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              </>
+            ) : (
+              <>
+                <path d="M15 18l-6-6 6-6" />
+              </>
+            )}
+          </svg>
+        </button>
+      </div>
 
-    </div>
+      <nav className="sidebar-nav">
+        <ul>
+          {visibleMenuItems.map((item) => (
+            <li key={item.path} className={isActive(item.path) ? "active" : ""}>
+              <Link to={item.path} title={item.name}>
+                <span className="sidebar-icon">{ICONS[item.icon]}</span>
+                {!collapsed && <span className="sidebar-label">{item.name}</span>}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <footer className="sidebar-footer">
+        <div className="sidebar-user">
+          <div className="sidebar-avatar">{getInitials()}</div>
+          {!collapsed && (
+            <div className="sidebar-user-info">
+              <strong>{getFullName()}</strong>
+              <span>{getRoleLabel()}</span>
+            </div>
+          )}
+        </div>
+      </footer>
+    </aside>
   );
 }
