@@ -2588,3 +2588,154 @@ button:disabled {
   font-size: 12px;
   line-height: 1.4;
 }
+
+/* =====================================================
+   ZABE BRAND + COLLAPSED SIDEBAR FIXES
+===================================================== */
+
+.sidebar-logo-wordmark {
+  display: block;
+  width: 100%;
+  max-width: 150px;
+  height: auto;
+  object-fit: contain;
+}
+
+.sidebar-logo-mark {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  margin: 0 auto;
+}
+
+.sidebar--collapsed .sidebar-brand {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.auth-logo-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.auth-logo {
+  max-width: 220px;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Fixed sidebar + main content offset (prevents content under sidebar) */
+.sidebar {
+  width: 250px !important;
+  min-width: 0 !important;
+  max-width: 250px;
+}
+
+.sidebar.sidebar--collapsed,
+.sidebar--collapsed {
+  width: 72px !important;
+  max-width: 72px !important;
+}
+
+.main-area {
+  margin-left: 250px !important;
+  width: calc(100% - 250px) !important;
+  max-width: calc(100% - 250px);
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.app-layout--collapsed .main-area,
+body.sidebar-is-collapsed .main-area {
+  margin-left: 72px !important;
+  width: calc(100% - 72px) !important;
+  max-width: calc(100% - 72px);
+}
+
+.page-content {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 1.25rem 1.5rem;
+  overflow-x: auto;
+}
+
+.topbar {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.25rem;
+}
+
+.topbar .search,
+.topbar input.search {
+  flex: 1;
+  min-width: 0;
+  max-width: 420px;
+}
+
+/* Neutralize legacy .main-content rules that fight the layout */
+.main-content {
+  margin-left: 0 !important;
+  width: 100% !important;
+}
+
+/* Stop old responsive rule from forcing 70px sidebar without main-area offset */
+@media (max-width: 800px) {
+  .sidebar:not(.sidebar--collapsed) {
+    width: 250px !important;
+    max-width: 250px !important;
+  }
+
+  .main-area {
+    margin-left: 250px !important;
+    width: calc(100% - 250px) !important;
+  }
+
+  .app-layout--collapsed .main-area,
+  body.sidebar-is-collapsed .main-area {
+    margin-left: 72px !important;
+    width: calc(100% - 72px) !important;
+  }
+
+  .sidebar-brand,
+  .sidebar-section-title,
+  .sidebar a span:not(.sidebar-icon),
+  .sidebar-alert,
+  .sidebar-user > div:last-child {
+    display: revert;
+  }
+
+  .sidebar--collapsed .sidebar-label,
+  .sidebar--collapsed .sidebar-user-info {
+    display: none !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .sidebar {
+    width: 72px !important;
+    max-width: 72px !important;
+  }
+
+  .sidebar .sidebar-label,
+  .sidebar .sidebar-user-info,
+  .sidebar .sidebar-logo-wordmark {
+    display: none !important;
+  }
+
+  .sidebar .sidebar-logo-mark {
+    display: block !important;
+  }
+
+  .main-area {
+    margin-left: 72px !important;
+    width: calc(100% - 72px) !important;
+  }
+}

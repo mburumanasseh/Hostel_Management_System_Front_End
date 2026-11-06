@@ -164,8 +164,19 @@ export default function Sidebar({ collapsed, onToggle }) {
     >
       <div className="sidebar-header">
         <div className="sidebar-brand">
-          {!collapsed && <h2>HostelMS</h2>}
-          {collapsed && <h2 className="sidebar-brand-mark">H</h2>}
+          {collapsed ? (
+            <img
+              src="/logo-mark.jpg"
+              alt="Zabe"
+              className="sidebar-logo-mark"
+            />
+          ) : (
+            <img
+              src="/logo-wordmark.jpg"
+              alt="Zabe Hostel Management System"
+              className="sidebar-logo-wordmark"
+            />
+          )}
         </div>
 
         <button
@@ -177,13 +188,9 @@ export default function Sidebar({ collapsed, onToggle }) {
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             {collapsed ? (
-              <>
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              </>
+              <path d="M4 6h16M4 12h16M4 18h16" />
             ) : (
-              <>
-                <path d="M15 18l-6-6 6-6" />
-              </>
+              <path d="M15 18l-6-6 6-6" />
             )}
           </svg>
         </button>

@@ -71,7 +71,13 @@ export default function Register() {
   return (
     <div className="login-page">
       <div className="login-card">
-
+        <div className="auth-logo-wrap">
+          <img
+            src="/logo-wordmark.jpg"
+            alt="Zabe Hostel Management System"
+            className="auth-logo"
+          />
+        </div>
         <h1>Create Student Account</h1>
 
         <p className="login-subtitle">
