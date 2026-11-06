@@ -4,7 +4,11 @@ import {
   getRooms,
   getAllocations,
   getMaintenanceRequests,
+  getAvailableRooms,
+  getMyAllocation,
 } from "../api";
+import { getUserRole } from "../utils/auth";
+import { useNavigate } from "react-router-dom";
 
 import {
   BarChart,
@@ -19,6 +23,13 @@ import {
 } from "recharts";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+  const role = getUserRole();
+  const isStudent = role === "student";
+
+  const [availableRoomCount, setAvailableRoomCount] = useState(0);
+  const [myAllocation, setMyAllocation] = useState(null);
+
   const [stats, setStats] = useState({
     students: 0,
     rooms: 0,
@@ -73,6 +84,22 @@ export default function Dashboard() {
 
         setMaintenanceRequests(maintenance);
 
+        if (getUserRole() === "student") {
+          try {
+            const [avail, mine] = await Promise.all([
+              getAvailableRooms(),
+              getMyAllocation(),
+            ]);
+            setAvailableRoomCount(
+              avail.data?.count ?? (avail.data?.rooms || []).length
+            );
+            setMyAllocation(mine.data?.allocation ?? null);
+          } catch (e) {
+            // non-fatal for main dashboard
+            console.warn("Student room data:", e);
+          }
+        }
+
         if (
           results.every(
             (result) => result.status === "rejected"
@@ -103,7 +130,48 @@ export default function Dashboard() {
    * Maintenance statistics
    */
 
-  const pending = maintenanceRequests.filter(
+  
+
+  const studentBookingPanel = isStudent ? (
+    <div
+      className="student-booking-panel"
+      style={{
+        marginBottom: "1.5rem",
+        padding: "1.25rem 1.5rem",
+        borderRadius: 12,
+        border: "1px solid rgba(255,255,255,0.08)",
+        background: "rgba(59, 130, 246, 0.08)",
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "1rem",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}
+    >
+      <div>
+        <h2 style={{ margin: 0, fontSize: "1.25rem" }}>Room booking</h2>
+        <p style={{ margin: "0.4rem 0 0", opacity: 0.85 }}>
+          {myAllocation
+            ? `You are allocated to room ${
+                myAllocation.room?.room_number || myAllocation.room_id
+              }.`
+            : `${availableRoomCount} room${
+                availableRoomCount === 1 ? "" : "s"
+              } currently have free space.`}
+        </p>
+      </div>
+      <button
+        type="button"
+        className="login-button"
+        onClick={() => navigate("/book-room")}
+        style={{ padding: "0.65rem 1.25rem" }}
+      >
+        {myAllocation ? "View my room" : "Book a Room"}
+      </button>
+    </div>
+  ) : null;
+
+const pending = maintenanceRequests.filter(
     (request) =>
       request.status?.toLowerCase() === "pending"
   ).length;
@@ -184,6 +252,8 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-page">
+      {studentBookingPanel}
+
 
       {/* ================================
           PAGE HEADER

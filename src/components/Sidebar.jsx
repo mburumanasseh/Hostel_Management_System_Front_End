@@ -50,6 +50,14 @@ export default function Sidebar() {
         "student"
       ],
     },
+    {
+      label: "Book a Room",
+      path: "/book-room",
+      roles: [
+        "student"
+      ]
+    },
+
 
     {
       name: "Room Allocation",

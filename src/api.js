@@ -187,8 +187,25 @@ export const getAllocation = (allocationId) =>
 | Create an allocation.
 */
 
+
 export const createAllocation = (data) =>
   API.post("/allocations", data);
+
+
+/*
+| Student self-service: book a room (uses JWT student profile).
+*/
+
+export const bookRoom = (roomId) =>
+  API.post("/allocations/book", { room_id: roomId });
+
+
+/*
+| Rooms that still have free capacity (for student booking).
+*/
+
+export const getAvailableRooms = () =>
+  API.get("/allocations/available-rooms");
 
 
 /*
