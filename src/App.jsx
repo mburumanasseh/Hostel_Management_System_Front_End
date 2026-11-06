@@ -17,6 +17,7 @@ import StudentFeeTracking from "./components/StudentFeeTracking";
 import Payments from "./components/Payments";
 import HostelFees from "./components/HostelFees";
 import BookRoom from "./components/BookRoom";
+import Settings from "./components/Settings";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleRoute from "./components/RoleRoute";
@@ -113,6 +114,20 @@ export default function App() {
           />
 
 
+
+
+          {/* =================================================
+              SETTINGS (all roles)
+          ================================================= */}
+
+          <Route
+            path="/settings"
+            element={
+              <Layout>
+                <Settings />
+              </Layout>
+            }
+          />
 
           {/* =================================================
               BOOK ROOM (students)

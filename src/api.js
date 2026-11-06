@@ -90,6 +90,9 @@ export const register = (data) =>
 export const getCurrentUser = () =>
   API.get("/auth/me");
 
+export const changePassword = (data) =>
+  API.post("/auth/change-password", data);
+
 
 /*
 |--------------------------------------------------------------------------

@@ -44,6 +44,12 @@ const ICONS = {
       <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
     </svg>
   ),
+  settings: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+    </svg>
+  ),
   feeTracking: (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M3 3v18h18" />
@@ -105,6 +111,12 @@ export default function Sidebar({ collapsed, onToggle }) {
       path: "/fee-tracking",
       icon: "feeTracking",
       roles: ["admin", "finance", "warden"],
+    },
+    {
+      name: "Settings",
+      path: "/settings",
+      icon: "settings",
+      roles: ["admin", "finance", "warden", "student"],
     },
   ];
 
