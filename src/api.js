@@ -1,10 +1,11 @@
 
 import axios from "axios";
 
-// Set VITE_API_URL in .env (local) or host env (Vercel/Netlify/Render).
-// Example production: VITE_API_URL=https://your-service.onrender.com/api
+// Set VITE_API_URL in .env for local override.
+// Default: deployed Render backend.
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  import.meta.env.VITE_API_URL ||
+  "https://hostel-management-system-back-end-1.onrender.com/api";
 
 const API = axios.create({
   baseURL: API_BASE_URL,
