@@ -66,7 +66,7 @@ export default function Sidebar({ collapsed, onToggle, isMobile = false, mobileO
   const menuItems = [
     {
       name: "Dashboard",
-      path: "/",
+      path: "/dashboard",
       icon: "dashboard",
       roles: ["admin", "finance", "warden", "student"],
     },
@@ -125,7 +125,7 @@ export default function Sidebar({ collapsed, onToggle, isMobile = false, mobileO
   );
 
   const isActive = (path) => {
-    if (path === "/") return location.pathname === "/";
+    if (path === "/dashboard") return location.pathname === "/dashboard" || location.pathname === "/";
     return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 

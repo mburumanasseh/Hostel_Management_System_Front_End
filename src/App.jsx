@@ -18,6 +18,10 @@ import Payments from "./components/Payments";
 import HostelFees from "./components/HostelFees";
 import BookRoom from "./components/BookRoom";
 import Settings from "./components/Settings";
+import PublicLayout from "./components/PublicLayout";
+import Home from "./components/Home";
+import About from "./components/About";
+import Faqs from "./components/Faqs";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleRoute from "./components/RoleRoute";
@@ -71,7 +75,17 @@ export default function App() {
       <Routes>
 
         {/* =====================================================
-            PUBLIC ROUTES
+            MARKETING / PUBLIC SITE
+        ===================================================== */}
+
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/faqs" element={<Faqs />} />
+        </Route>
+
+        {/* =====================================================
+            AUTH
         ===================================================== */}
 
         <Route
@@ -105,7 +119,7 @@ export default function App() {
 
 
           <Route
-            path="/"
+            path="/dashboard"
             element={
               <Layout>
                 <Dashboard />
@@ -357,7 +371,7 @@ export default function App() {
           path="*"
           element={
             <Navigate
-              to="/"
+              to="/dashboard"
               replace
             />
           }

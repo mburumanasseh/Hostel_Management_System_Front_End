@@ -42,7 +42,7 @@ export default function Login() {
   };
 
   const handleContinue = () => {
-    navigate("/");
+    navigate("/dashboard");
   };
 
   const handleLogin = async (e) => {
@@ -58,7 +58,7 @@ export default function Login() {
       const { access_token, user } = response.data;
 
       saveAuth(access_token, user, rememberMe);
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
       console.error(err);
       setError(
