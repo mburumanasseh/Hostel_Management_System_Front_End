@@ -2910,3 +2910,62 @@ body.sidebar-is-collapsed .main-area {
 .dashboard-header .search-box {
   display: none !important;
 }
+
+/* =====================================================
+   SIDEBAR LOGO — fill header area
+===================================================== */
+
+.sidebar-header {
+  min-height: 72px !important;
+  padding: 0.5rem 0.5rem 0.5rem 0.65rem !important;
+  gap: 0.4rem !important;
+}
+
+.sidebar-brand {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  height: 100%;
+}
+
+.sidebar-logo-wordmark {
+  width: 100% !important;
+  max-width: none !important;
+  max-height: 56px !important;
+  height: 56px !important;
+  object-fit: contain !important;
+  object-position: left center !important;
+  background: #fff !important;
+  border-radius: 10px !important;
+  padding: 6px 10px !important;
+  box-sizing: border-box !important;
+}
+
+.sidebar--collapsed .sidebar-header {
+  min-height: auto !important;
+  padding: 0.6rem 0.35rem !important;
+}
+
+.sidebar--collapsed .sidebar-brand {
+  justify-content: center !important;
+  width: 100% !important;
+}
+
+.sidebar-logo-mark {
+  width: 44px !important;
+  height: 44px !important;
+  max-width: 44px !important;
+  max-height: 44px !important;
+  object-fit: contain !important;
+  background: #fff !important;
+  border-radius: 10px !important;
+  padding: 4px !important;
+}
+
+.sidebar-toggle {
+  width: 32px !important;
+  height: 32px !important;
+  flex-shrink: 0 !important;
+}
