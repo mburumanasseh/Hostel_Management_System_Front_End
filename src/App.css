@@ -2969,3 +2969,39 @@ body.sidebar-is-collapsed .main-area {
   height: 32px !important;
   flex-shrink: 0 !important;
 }
+
+/* =====================================================
+   SIDEBAR WORDMARK — large readable name
+===================================================== */
+
+.sidebar-header {
+  min-height: 88px !important;
+  padding: 0.65rem 0.55rem !important;
+  align-items: center !important;
+}
+
+.sidebar-brand {
+  flex: 1 1 auto !important;
+  width: 100% !important;
+}
+
+.sidebar-logo-wordmark {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: 72px !important;
+  min-height: 52px !important;
+  object-fit: contain !important;
+  object-position: left center !important;
+  background: #ffffff !important;
+  border-radius: 10px !important;
+  padding: 8px 12px !important;
+  box-sizing: border-box !important;
+}
+
+.sidebar--collapsed .sidebar-logo-mark {
+  width: 48px !important;
+  height: 48px !important;
+  max-width: 48px !important;
+  max-height: 48px !important;
+}
