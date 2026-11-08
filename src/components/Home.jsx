@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
+import InstallAppHint from "./InstallAppHint";
 
 export default function Home() {
   return (
     <div className="home-page">
+      <InstallAppHint />
       <section className="hero">
         <div className="hero-copy">
           <p className="hero-eyebrow">Zabe Hostel Management System</p>
