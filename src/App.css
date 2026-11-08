@@ -3005,3 +3005,260 @@ body.sidebar-is-collapsed .main-area {
   max-width: 48px !important;
   max-height: 48px !important;
 }
+
+/* =====================================================
+   PHONE / TABLET — polished mobile layout
+===================================================== */
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: rgba(7, 27, 56, 0.45);
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+}
+
+.topbar-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #e1e5ea;
+  border-radius: 10px;
+  background: #fff;
+  color: #071b38;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.topbar-brand-mobile {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar-logo-mark {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #fff;
+}
+
+@media (max-width: 768px) {
+  .topbar-menu-btn {
+    display: inline-flex !important;
+  }
+
+  .sidebar.sidebar--mobile {
+    width: min(280px, 86vw) !important;
+    max-width: 280px !important;
+    min-width: 0 !important;
+    transform: translateX(-105%);
+    transition: transform 0.25s ease;
+    z-index: 50 !important;
+    box-shadow: none;
+  }
+
+  .sidebar.sidebar--mobile.sidebar--mobile-open {
+    transform: translateX(0);
+    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.25);
+  }
+
+  .sidebar.sidebar--mobile .sidebar-label,
+  .sidebar.sidebar--mobile .sidebar-user-info,
+  .sidebar.sidebar--mobile .sidebar-logo-wordmark {
+    display: block !important;
+  }
+
+  .sidebar.sidebar--mobile .sidebar-logo-mark {
+    display: none !important;
+  }
+
+  .sidebar.sidebar--mobile .sidebar-nav a {
+    justify-content: flex-start !important;
+    gap: 0.75rem !important;
+    padding: 0.85rem 1rem !important;
+    min-height: 48px;
+  }
+
+  .sidebar.sidebar--mobile .sidebar-header {
+    min-height: 72px !important;
+  }
+
+  .main-area,
+  .app-layout--collapsed .main-area,
+  .app-layout--mobile .main-area,
+  body.sidebar-is-collapsed .main-area {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    height: 56px !important;
+    min-height: 56px;
+    padding: 0 0.75rem !important;
+    gap: 0.5rem !important;
+  }
+
+  .topbar-user-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.15;
+    font-size: 0.75rem !important;
+    max-width: 42vw;
+    overflow: hidden;
+  }
+
+  .topbar-user-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .topbar-user-role {
+    opacity: 0.7;
+    text-transform: capitalize;
+    font-size: 0.7rem;
+  }
+
+  .topbar-logout {
+    padding: 0.4rem 0.65rem !important;
+    font-size: 0.8rem !important;
+  }
+
+  .page-content {
+    padding: 0.85rem 0.85rem 1.5rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .dashboard-page,
+  .dashboard-header,
+  .book-room-page,
+  .settings-page {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .dashboard-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.35rem !important;
+  }
+
+  .metrics-grid,
+  .charts-grid,
+  .fee-summary {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  .metric-card,
+  .chart-card,
+  .alerts-card {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .chart-container,
+  .donut-container {
+    width: 100% !important;
+    min-height: 200px;
+  }
+
+  /* Tables: horizontal scroll instead of crushing layout */
+  table,
+  .data-table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    font-size: 0.9rem;
+  }
+
+  .room-allocation table,
+  .maintenance table,
+  .book-room-page table {
+    display: block;
+    overflow-x: auto;
+    width: 100%;
+  }
+
+  /* Forms full width */
+  input,
+  select,
+  textarea,
+  .login-button {
+    max-width: 100%;
+    font-size: 16px !important; /* prevents iOS zoom */
+  }
+
+  .login-page {
+    padding: 1rem !important;
+    align-items: flex-start !important;
+    padding-top: 2rem !important;
+  }
+
+  .login-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 1.25rem !important;
+    margin: 0 auto;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+  }
+
+  .auth-logo {
+    max-width: 180px !important;
+  }
+
+  .student-booking-panel {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .student-booking-panel .login-button {
+    width: 100%;
+  }
+
+  .allocate-form,
+  .new-request,
+  .form-row {
+    flex-direction: column !important;
+  }
+
+  .page-header h1 {
+    font-size: 1.25rem !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .topbar-user-meta {
+    display: none !important;
+  }
+
+  .topbar-logout {
+    padding: 0.35rem 0.5rem !important;
+  }
+
+  .page-content {
+    padding: 0.65rem !important;
+  }
+}

@@ -58,7 +58,7 @@ const ICONS = {
   ),
 };
 
-export default function Sidebar({ collapsed, onToggle }) {
+export default function Sidebar({ collapsed, onToggle, isMobile = false, mobileOpen = false, onNavigate }) {
   const location = useLocation();
   const user = getLoggedInUser();
   const role = user?.role;
@@ -159,12 +159,17 @@ export default function Sidebar({ collapsed, onToggle }) {
 
   return (
     <aside
-      className={`sidebar${collapsed ? " sidebar--collapsed" : ""}`}
+      className={[
+        "sidebar",
+        collapsed && !isMobile ? "sidebar--collapsed" : "",
+        isMobile ? "sidebar--mobile" : "",
+        isMobile && mobileOpen ? "sidebar--mobile-open" : "",
+      ].filter(Boolean).join(" ")}
       aria-label="Main navigation"
     >
       <div className="sidebar-header">
         <div className="sidebar-brand">
-          {collapsed ? (
+          {collapsed && !isMobile ? (
             <img
               src="/logo-mark.jpg"
               alt="Zabe"
@@ -183,11 +188,19 @@ export default function Sidebar({ collapsed, onToggle }) {
           type="button"
           className="sidebar-toggle"
           onClick={onToggle}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          title={collapsed ? "Expand" : "Collapse"}
+          aria-label={
+            isMobile
+              ? "Close menu"
+              : collapsed
+                ? "Expand sidebar"
+                : "Collapse sidebar"
+          }
+          title={isMobile ? "Close" : collapsed ? "Expand" : "Collapse"}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            {collapsed ? (
+            {isMobile ? (
+              <path d="M18 6L6 18M6 6l12 12" />
+            ) : collapsed ? (
               <path d="M4 6h16M4 12h16M4 18h16" />
             ) : (
               <path d="M15 18l-6-6 6-6" />
@@ -200,9 +213,15 @@ export default function Sidebar({ collapsed, onToggle }) {
         <ul>
           {visibleMenuItems.map((item) => (
             <li key={item.path} className={isActive(item.path) ? "active" : ""}>
-              <Link to={item.path} title={item.name}>
+              <Link
+                to={item.path}
+                title={item.name}
+                onClick={() => onNavigate?.()}
+              >
                 <span className="sidebar-icon">{ICONS[item.icon]}</span>
-                {!collapsed && <span className="sidebar-label">{item.name}</span>}
+                {(!collapsed || isMobile) && (
+                  <span className="sidebar-label">{item.name}</span>
+                )}
               </Link>
             </li>
           ))}
@@ -212,7 +231,7 @@ export default function Sidebar({ collapsed, onToggle }) {
       <footer className="sidebar-footer">
         <div className="sidebar-user">
           <div className="sidebar-avatar">{getInitials()}</div>
-          {!collapsed && (
+          {(!collapsed || isMobile) && (
             <div className="sidebar-user-info">
               <strong>{getFullName()}</strong>
               <span>{getRoleLabel()}</span>

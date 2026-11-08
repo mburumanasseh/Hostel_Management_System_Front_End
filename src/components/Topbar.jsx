@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { logout } from "../api";
 import { getLoggedInUser } from "../utils/auth";
 
-export default function Topbar() {
+export default function Topbar({ isMobile, onMenuClick }) {
   const navigate = useNavigate();
   const user = getLoggedInUser();
 
@@ -20,13 +20,32 @@ export default function Topbar() {
 
   return (
     <div className="topbar">
-      <div className="topbar-spacer" />
+      {isMobile && (
+        <button
+          type="button"
+          className="topbar-menu-btn"
+          onClick={onMenuClick}
+          aria-label="Open menu"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      )}
+
+      <div className="topbar-brand-mobile">
+        {isMobile && (
+          <img src="/logo-mark.jpg" alt="Zabe" className="topbar-logo-mark" />
+        )}
+      </div>
 
       <div className="topbar-user">
         {user && (
           <span className="topbar-user-meta">
-            {firstName} {lastName}
-            {role ? ` · ${role}` : ""}
+            <span className="topbar-user-name">
+              {firstName} {lastName}
+            </span>
+            {role ? <span className="topbar-user-role">{role}</span> : null}
           </span>
         )}
 
