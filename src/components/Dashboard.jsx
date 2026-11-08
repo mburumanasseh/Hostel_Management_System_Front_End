@@ -265,33 +265,19 @@ const pending = maintenanceRequests.filter(
           <h1>Dashboard</h1>
 
           <p>
-            Hostel management overview
+            {isStudent
+              ? "Your hostel account overview"
+              : "Hostel management overview"}
           </p>
         </div>
 
-        <div className="dashboard-actions">
-
-          <div className="search-box">
-            <span>⌕</span>
-
-            <input
-              type="text"
-              placeholder="Search students, rooms..."
-            />
+        {!isStudent && urgent > 0 && (
+          <div className="dashboard-actions">
+            <span className="metric-subtext">
+              {urgent} urgent maintenance request{urgent === 1 ? "" : "s"}
+            </span>
           </div>
-
-          <button className="notification-button">
-            ♧
-            {urgent > 0 && (
-              <span className="notification-dot"></span>
-            )}
-          </button>
-
-          <div className="user-avatar">
-            HW
-          </div>
-
-        </div>
+        )}
 
       </div>
 
@@ -307,6 +293,7 @@ const pending = maintenanceRequests.filter(
           METRIC CARDS
       ================================= */}
 
+      {!isStudent && (
       <div className="metrics-grid">
 
         {/* STUDENTS */}
@@ -644,22 +631,14 @@ const pending = maintenanceRequests.filter(
       </div>
 
 
-      {/* ================================
-          ALERTS
-      ================================= */}
+      )}
 
+      {/* Staff-only alerts */}
+      {!isStudent && (
       <div className="alerts-card">
-
-        <div className="alert-icon">
-          !
-        </div>
-
+        <div className="alert-icon">!</div>
         <div>
-
-          <strong>
-            Alerts
-          </strong>
-
+          <strong>Alerts</strong>
           <p>
             {urgent > 0
               ? `${urgent} urgent maintenance request${
@@ -667,10 +646,28 @@ const pending = maintenanceRequests.filter(
                 } require attention.`
               : "No urgent maintenance requests."}
           </p>
-
         </div>
-
       </div>
+      )}
+
+      {/* Student summary when no admin metrics */}
+      {isStudent && (
+        <div className="metric-card" style={{ marginTop: "0.5rem" }}>
+          <h2 style={{ marginTop: 0 }}>
+            {myAllocation
+              ? `Room ${myAllocation.room?.room_number || ""}`
+              : "No room yet"}
+          </h2>
+          <p>
+            {myAllocation
+              ? "Your current allocation"
+              : "Use Book a Room to choose an available room"}
+          </p>
+          <span className="metric-subtext">
+            {availableRoomCount} room{availableRoomCount === 1 ? "" : "s"} with free space
+          </span>
+        </div>
+      )}
 
     </div>
   );

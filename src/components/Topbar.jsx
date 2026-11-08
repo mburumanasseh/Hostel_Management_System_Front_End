@@ -1,10 +1,8 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../api";
 import { getLoggedInUser } from "../utils/auth";
 
-export default function Topbar({ onSearch }) {
-  const [query, setQuery] = useState("");
+export default function Topbar() {
   const navigate = useNavigate();
   const user = getLoggedInUser();
 
@@ -15,12 +13,6 @@ export default function Topbar({ onSearch }) {
   const initials =
     `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || "U";
 
-  const handleChange = (e) => {
-    const value = e.target.value;
-    setQuery(value);
-    if (onSearch) onSearch(value);
-  };
-
   const handleLogout = () => {
     logout();
     navigate("/login", { replace: true });
@@ -28,34 +20,24 @@ export default function Topbar({ onSearch }) {
 
   return (
     <div className="topbar">
-      <input
-        type="text"
-        placeholder="Search..."
-        className="search"
-        value={query}
-        onChange={handleChange}
-      />
+      <div className="topbar-spacer" />
 
-      <div className="user" style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+      <div className="topbar-user">
         {user && (
-          <span style={{ fontSize: "0.85rem", opacity: 0.85 }}>
+          <span className="topbar-user-meta">
             {firstName} {lastName}
             {role ? ` · ${role}` : ""}
           </span>
         )}
 
-        <span
-          className="profile"
-          title={user ? `${firstName} ${lastName}` : "User"}
-        >
+        <span className="profile" title={user ? `${firstName} ${lastName}` : "User"}>
           {initials}
         </span>
 
         <button
           type="button"
-          className="login-button"
+          className="login-button topbar-logout"
           onClick={handleLogout}
-          style={{ padding: "0.35rem 0.75rem", fontSize: "0.85rem" }}
         >
           Log out
         </button>
