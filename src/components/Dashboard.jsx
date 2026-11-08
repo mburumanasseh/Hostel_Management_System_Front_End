@@ -294,6 +294,7 @@ const pending = maintenanceRequests.filter(
       ================================= */}
 
       {!isStudent && (
+      <>
       <div className="metrics-grid">
 
         {/* STUDENTS */}
@@ -629,8 +630,7 @@ const pending = maintenanceRequests.filter(
         </div>
 
       </div>
-
-
+      </>
       )}
 
       {/* Staff-only alerts */}
